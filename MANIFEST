@@ -1,0 +1,15 @@
+lib/Git/PurePerl.pm
+lib/Git/PurePerl/DirectoryEntry.pm
+lib/Git/PurePerl/Object.pm
+lib/Git/PurePerl/Object/Blob.pm
+lib/Git/PurePerl/Object/Commit.pm
+lib/Git/PurePerl/Object/Tree.pm
+lib/Git/PurePerl/Pack.pm
+Makefile.PL
+MANIFEST			This list of files
+README
+t/00_setup.t
+t/simple.t
+test-project-packs.tgz
+test-project.tgz
+
