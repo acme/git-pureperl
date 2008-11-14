@@ -37,7 +37,7 @@ sub master {
     my $master = file( $self->directory, '.git', 'refs', 'heads', 'master' );
     my $sha1;
     if ( -f $master ) {
-        my $sha1 = $master->slurp || confess('Missing refs/heads/master');
+        $sha1 = $master->slurp || confess('Missing refs/heads/master');
         chomp $sha1;
     } else {
         my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
