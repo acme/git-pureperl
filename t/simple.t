@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use Test::More tests => 34;
-use lib '.';
 use Git::PurePerl;
 
 foreach my $directory qw(test-project test-project-packs) {
