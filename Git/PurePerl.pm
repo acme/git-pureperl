@@ -5,6 +5,7 @@ use MooseX::Types::Path::Class;
 use Compress::Zlib qw(uncompress);
 use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Object;
+use Git::PurePerl::Object::Blob;
 use Git::PurePerl::Object::Commit;
 use Git::PurePerl::Object::Tree;
 use Path::Class;
@@ -45,6 +46,13 @@ sub get_object {
         );
     } elsif ( $kind eq 'tree' ) {
         return Git::PurePerl::Object::Tree->new(
+            sha1    => $sha1,
+            kind    => $kind,
+            size    => $size,
+            content => $content,
+        );
+    } elsif ( $kind eq 'blob' ) {
+        return Git::PurePerl::Object::Blob->new(
             sha1    => $sha1,
             kind    => $kind,
             size    => $size,
