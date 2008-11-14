@@ -11,6 +11,15 @@ use Path::Class;
 has 'directory' =>
     ( is => 'ro', isa => 'Path::Class::Dir', required => 1, coerce => 1 );
 
+sub master {
+    my $self = shift;
+    my $filename
+        = file( $self->directory, '.git', 'refs', 'heads', 'master' );
+    my $sha1 = $filename->slurp || confess('Missing refs/heads/master');
+    chomp $sha1;
+    return $self->get_object($sha1);
+}
+
 sub get_object {
     my ( $self, $sha1 ) = @_;
     warn "getting $sha1";
@@ -21,24 +30,24 @@ sub get_object {
     );
     warn $filename;
     my $data = uncompress( $filename->slurp );
-    my ( $type, $size, $content ) = $data =~ /^(\w+) (\d+)\0(.+)$/s;
-    warn "$type / $size / $content";
-    if ( $type eq 'commit' ) {
+    my ( $kind, $size, $content ) = $data =~ /^(\w+) (\d+)\0(.+)$/s;
+    warn "$kind / $size / $content";
+    if ( $kind eq 'commit' ) {
         return Git::PurePerl::Object::Commit->new(
             sha1    => $sha1,
-            type    => $type,
+            kind    => $kind,
             size    => $size,
             content => $content,
         );
-    } elsif ( $type eq 'tree' ) {
+    } elsif ( $kind eq 'tree' ) {
         return Git::PurePerl::Object::Tree->new(
             sha1    => $sha1,
-            type    => $type,
+            kind    => $kind,
             size    => $size,
             content => $content,
         );
     } else {
-        confess "unknown type $type";
+        confess "unknown kind $kind";
     }
 
 }
