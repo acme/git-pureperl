@@ -1,0 +1,19 @@
+NAME
+    Git::PurePerl - A Pure Perl interface to Git repositories
+
+SYNOPSIS
+DESCRIPTION
+    This module is a Pure Perl interface to Git repositories.
+
+    It was mostly based on Grit <http://grit.rubyforge.org/>.
+
+AUTHOR
+    Leon Brocard <acme@astray.com>
+
+COPYRIGHT
+    Copyright (C) 2008, Leon Brocard.
+
+LICENSE
+    This module is free software; you can redistribute it or modify it under
+    the same terms as Perl itself.
+

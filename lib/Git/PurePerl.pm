@@ -114,3 +114,30 @@ sub create_object {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Git::PurePerl - A Pure Perl interface to Git repositories
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+This module is a Pure Perl interface to Git repositories.
+
+It was mostly based on Grit L<http://grit.rubyforge.org/>.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2008, Leon Brocard.
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or 
+modify it under the same terms as Perl itself.
