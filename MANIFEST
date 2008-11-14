@@ -1,3 +1,4 @@
+CHANGES
 lib/Git/PurePerl.pm
 lib/Git/PurePerl/DirectoryEntry.pm
 lib/Git/PurePerl/Object.pm
