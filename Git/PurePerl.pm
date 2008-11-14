@@ -3,6 +3,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
 use Compress::Zlib qw(uncompress);
+use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Object;
 use Git::PurePerl::Object::Commit;
 use Git::PurePerl::Object::Tree;
@@ -22,16 +23,19 @@ sub master {
 
 sub get_object {
     my ( $self, $sha1 ) = @_;
-    warn "getting $sha1";
+
+    #warn "getting $sha1";
     my $filename = file(
         $self->directory, '.git', 'objects',
         substr( $sha1, 0, 2 ),
         substr( $sha1, 2 )
     );
-    warn $filename;
+
+    #warn $filename;
     my $data = uncompress( $filename->slurp );
     my ( $kind, $size, $content ) = $data =~ /^(\w+) (\d+)\0(.+)$/s;
-    warn "$kind / $size / $content";
+
+    #warn "$kind / $size";
     if ( $kind eq 'commit' ) {
         return Git::PurePerl::Object::Commit->new(
             sha1    => $sha1,

@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 12;
 use lib '.';
 use Git::PurePerl;
 
@@ -36,4 +36,12 @@ like( $master->author,
 like( $master->committer,
     qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
 is( $master->comment, 'add again' );
+
+my $tree              = $git->get_object( $master->tree );
+my @directory_entries = $tree->directory_entries;
+is( @directory_entries, 1 );
+my $directory_entry = $directory_entries[0];
+is( $directory_entry->mode,     '100644' );
+is( $directory_entry->filename, 'file.txt' );
+is( $directory_entry->sha1,     '513feba2e53ebbd2532419ded848ba19de88ba00' );
 
