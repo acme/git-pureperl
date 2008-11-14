@@ -14,11 +14,10 @@ ok(1, 'extracted');
 
 =for shell
 
-How to create test-project:
+How to create test-project and test-project-packs:
 
 mkdir test-project
 cd test-project
-
 git init
 git config user.name "Your Name Comes Here"
 git config user.email you@yourdomain.example.com
@@ -31,15 +30,11 @@ echo "hello world, again" >>file.txt
 git commit -a -m "add again"
 cd ..
 tar fvzc test-project.tgz test-project
-rm -rf test-project
 
-How to create test-project-packs:
-
-mkdir test-project-packs
-cd test-project-packs
-...
+cd test-project
 git gc
 cd ..
+mv test-project test-project-packs
 tar fvzc test-project-packs.tgz test-project-packs
 rm -rf test-project-packs
 
