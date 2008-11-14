@@ -14,13 +14,9 @@ sub BUILD {
     my $self = shift;
     my @lines = split "\n", $self->content;
     while ( my $line = shift @lines ) {
-        warn "[$line]";
-
-        #use Devel::Peek; Dump $line;
-        last unless $line;
+         last unless $line;
         my ( $key, $value ) = split ' ', $line, 2;
         $self->$key($value);
-        warn "[$key / $value]";
     }
     $self->comment( join "\n", @lines );
 }
