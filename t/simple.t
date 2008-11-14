@@ -21,6 +21,7 @@ echo 'hello world!' >file.txt
 git commit -a -m "add emphasis"
 echo "hello world, again" >>file.txt
 git commit -a -m "add again"
+cd ..
 
 =cut 
 
