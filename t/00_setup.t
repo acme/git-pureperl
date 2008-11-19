@@ -4,7 +4,7 @@ use warnings;
 use Test::More tests => 1;
 use Archive::Extract;
 
-foreach my $name qw(test-project test-project-packs) {
+foreach my $name qw(test-project test-project-packs test-project-packs2) {
     next if -d $name;
     my $ae = Archive::Extract->new( archive => "$name.tgz" );
     $ae->extract;
@@ -13,7 +13,7 @@ ok(1, 'extracted');
 
 =for shell
 
-How to create test-project and test-project-packs:
+# How to create test-project and test-project-packs:
 
 mkdir test-project
 cd test-project
@@ -36,5 +36,8 @@ cd ..
 mv test-project test-project-packs
 tar fvzc test-project-packs.tgz test-project-packs
 rm -rf test-project-packs
+
+# and likewise but on a recent git for test-project-packs2
+tar fvzc test-project-packs2.tgz test-project-packs2
 
 =cut 

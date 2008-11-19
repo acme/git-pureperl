@@ -12,5 +12,6 @@ README
 t/00_setup.t
 t/simple.t
 test-project-packs.tgz
+test-project-packs2.tgz
 test-project.tgz
 
