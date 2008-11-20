@@ -139,7 +139,8 @@ sub get_object {
 
 sub unpack_object {
     my ( $self, $offset ) = @_;
-    my $fh = $self->open_pack;
+    my $obj_offset = $offset;
+    my $fh         = $self->open_pack;
 
     $fh->seek( $offset, 0 ) || die $!;
 
@@ -163,9 +164,10 @@ sub unpack_object {
     $type = $TYPES[$type];
 
     if ( $type eq 'ofs_delta' || $type eq 'ref_delta' ) {
-        die "deltified";
-
-#            data, type = unpack_deltified(packfile, type, offset, obj_offset, size, options)
+        ( $type, $size, my $content )
+            = $self->unpack_deltified( $fh, $type, $offset, $obj_offset,
+            $size );
+        return ( $type, $size, $content );
 
     } elsif ( $type eq 'commit'
         || $type eq 'tree'
@@ -196,4 +198,96 @@ sub read_compressed {
     return $out;
 }
 
+sub unpack_deltified {
+    my ( $self, $fh, $type, $offset, $obj_offset, $size ) = @_;
+
+    my $base;
+
+    $fh->seek( $offset, 0 ) || die $!;
+    $fh->read( my $sha1, $SHA1Size ) || die $!;
+    $sha1 = unpack( 'H*', $sha1 );
+
+    if ( $type eq 'ofs_delta' ) {
+        die 'ofs_delta unimplemented';
+    } else {
+        ( $type, undef, $base ) = $self->get_object($sha1);
+        $offset += $SHA1Size;
+
+    }
+
+    my $delta = $self->read_compressed( $fh, $offset, $size );
+    my $new = $self->patch_delta( $base, $delta );
+
+    return ( $type, length($new), $new );
+}
+
+sub patch_delta {
+    my ( $self, $base, $delta ) = @_;
+    my ( $src_size, $pos ) = $self->patch_delta_header_size( $delta, 0 );
+    if ( $src_size != length($base) ) {
+        confess "invalid delta data";
+    }
+
+    my ( $dest_size, $pos ) = $self->patch_delta_header_size( $delta, $pos );
+    my $dest = "";
+
+    while ( $pos < length($delta) ) {
+        my $c = substr( $delta, $pos, 1 );
+        $c = unpack( 'C', $c );
+        $pos++;
+        if ( ( $c & 0x80 ) != 0 ) {
+
+            my $cp_off  = 0;
+            my $cp_size = 0;
+            $cp_off = unpack( 'C', substr( $delta, $pos++, 1 ) )
+                if ( $c & 0x01 ) != 0;
+            $cp_off |= unpack( 'C', substr( $delta, $pos++, 1 ) ) << 8
+                if ( $c & 0x02 ) != 0;
+            $cp_off |= unpack( 'C', substr( $delta, $pos++, 1 ) ) << 16
+                if ( $c & 0x04 ) != 0;
+            $cp_off |= unpack( 'C', substr( $delta, $pos++, 1 ) ) << 24
+                if ( $c & 0x08 ) != 0;
+            $cp_size = unpack( 'C', substr( $delta, $pos++, 1 ) )
+                if ( $c & 0x10 ) != 0;
+            $cp_size |= unpack( 'C', substr( $delta, $pos++, 1 ) ) << 8
+                if ( $c & 0x20 ) != 0;
+            $cp_size |= unpack( 'C', substr( $delta, $pos++, 1 ) ) << 16
+                if ( $c & 0x40 ) != 0;
+            $cp_size = 0x10000 if $cp_size == 0;
+
+            $dest .= substr( $base, $cp_off, $cp_size );
+        } elsif ( $c != 0 ) {
+            $dest .= substr( $delta, $pos, $c );
+            $pos += $c;
+        } else {
+            confess 'invalid delta data';
+        }
+    }
+
+    if ( length($dest) != $dest_size ) {
+        confess 'invalid delta data';
+    }
+    return $dest;
+}
+
+sub patch_delta_header_size {
+    my ( $self, $delta, $pos ) = @_;
+
+    my $size  = 0;
+    my $shift = 0;
+    while (1) {
+
+        my $c = substr( $delta, $pos, 1 );
+        unless ( defined $c ) {
+            confess 'invalid delta header';
+        }
+        $c = unpack( 'C', $c );
+
+        $pos++;
+        $size |= ( $c & 0x7f ) << $shift;
+        $shift += 7;
+        last if ( $c & 0x80 ) == 0;
+    }
+    return ( $size, $pos );
+}
 1;
