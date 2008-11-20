@@ -1,12 +1,11 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 51;
+use Test::More tests => 153;
 use Git::PurePerl;
 
 foreach my $directory qw(test-project test-project-packs test-project-packs2)
 {
-#next unless $directory eq 'test-project-packs';
     my $git = Git::PurePerl->new( directory => $directory );
     my $commit = $git->master;
 

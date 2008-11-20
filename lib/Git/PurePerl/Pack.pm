@@ -204,11 +204,24 @@ sub unpack_deltified {
     my $base;
 
     $fh->seek( $offset, 0 ) || die $!;
-    $fh->read( my $sha1, $SHA1Size ) || die $!;
-    $sha1 = unpack( 'H*', $sha1 );
+    $fh->read( my $data, $SHA1Size ) || die $!;
+    my $sha1 = unpack( 'H*', $data );
 
     if ( $type eq 'ofs_delta' ) {
-        die 'ofs_delta unimplemented';
+        my $i           = 0;
+        my $c           = unpack( 'C', substr( $data, $i, 1 ) );
+        my $base_offset = $c & 0x7f;
+
+        while ( ( $c & 0x80 ) != 0 ) {
+            $c = unpack( 'C', substr( $data, ++$i, 1 ) );
+            $base_offset++;
+            $base_offset <<= 7;
+            $base_offset |= $c & 0x7f;
+        }
+        $base_offset = $obj_offset - $base_offset;
+        $offset += $i + 1;
+
+        ( $type, undef, $base ) = $self->unpack_object($base_offset);
     } else {
         ( $type, undef, $base ) = $self->get_object($sha1);
         $offset += $SHA1Size;
@@ -228,7 +241,7 @@ sub patch_delta {
         confess "invalid delta data";
     }
 
-    my ( $dest_size, $pos ) = $self->patch_delta_header_size( $delta, $pos );
+    ( my $dest_size, $pos ) = $self->patch_delta_header_size( $delta, $pos );
     my $dest = "";
 
     while ( $pos < length($delta) ) {
