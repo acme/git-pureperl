@@ -63,7 +63,7 @@ sub BUILD {
         confess("pack has discontinuous index") if $offset < $offsets[-1];
         push @offsets, $offset;
     }
-
+    $self->offsets( \@offsets );
     $self->size( $offsets[-1] );
 }
 
@@ -83,12 +83,13 @@ sub open_pack {
     return $fh;
 }
 
-sub get_object {
+sub get_object_old {
     my ( $self, $want_sha1 ) = @_;
 
     if ( $self->version == 1 ) {
         my $fh  = $self->open_index;
         my $pos = $OffsetStart;
+        warn $self->size . ' objects1';
         foreach my $i ( 1 .. $self->size ) {
             $fh->seek( $pos, 0 ) || die $!;
             $fh->read( my $data, $OffsetSize ) || die $!;
@@ -125,7 +126,7 @@ sub get_object {
             $data[$i]->[2] = unpack( 'N', $offset );
             $pos += $OffsetSize;
         }
-
+        warn scalar(@data) . ' objects2';
         foreach my $data (@data) {
             my ( $sha1, $crc, $offset ) = @$data;
             if ( $sha1 eq $want_sha1 ) {
@@ -136,6 +137,94 @@ sub get_object {
 
     }
 }
+
+sub get_object {
+    my ( $self, $want_sha1 ) = @_;
+    my @offsets = $self->offsets;
+    my $fh = $self->open_index;
+
+    my $slot = unpack( 'C', pack( 'H*', $want_sha1 ) );
+    return unless defined $slot;
+
+    my ( $first, $last ) = @offsets[ $slot, $slot + 1 ];
+
+    while ( $first < $last ) {
+        my $mid = int( ( $first + $last ) / 2 );
+        if ( $self->version == 1 ) {
+
+            $fh->seek( $SHA1Start + $mid * $EntrySize, 0 ) || die $!;
+            $fh->read( my $data, $SHA1Size ) || die $!;
+            my $midsha1 = unpack( 'H*', $data );
+            if ( $midsha1 lt $want_sha1 ) {
+                $first = $mid + 1;
+            } elsif ( $midsha1 gt $want_sha1 ) {
+                $last = $mid;
+            } else {
+                my $pos = $OffsetStart + $mid * $EntrySize;
+                $fh->seek( $pos, 0 ) || die $!;
+                $fh->read( my $data, $OffsetSize ) || die $!;
+                my $offset = unpack( 'N', $data );
+                return $self->unpack_object($offset);
+            }
+        } elsif ($self->version == 2) {
+            $fh->seek( $self->global_offset + $OffsetStart + ( $mid * $SHA1Size ), 0 ) || die $!;
+            $fh->read( my $data, $SHA1Size ) || die $!;
+            my $midsha1 = unpack( 'H*', $data );
+            if ( $midsha1 lt $want_sha1 ) {
+                $first = $mid + 1;
+            } elsif ( $midsha1 gt $want_sha1 ) {
+                $last = $mid;
+            } else {
+                my $pos
+                    = $self->global_offset + $OffsetStart
+                    + ( $self->size * ( $SHA1Size + $CrcSize ) )
+                    + ( $mid * $OffsetSize );
+                $fh->seek( $pos, 0 ) || die $!;
+                $fh->read( my $data, $OffsetSize ) || die $!;
+                my $offset = unpack( 'N', $data );
+                return $self->unpack_object($offset);
+            }
+        }
+    }
+    return;
+}
+
+# def find_object_in_index(idx, sha1)
+#          slot = sha1[0]
+#          return nil if !slot
+#          first, last = @offsets[slot,2]
+#          while first < last
+#            mid = (first + last) / 2
+#            if @version == 2
+#              midsha1 = idx[OffsetStart + (mid * SHA1Size), SHA1Size]
+#              cmp = midsha1 <=> sha1
+#
+#              if cmp < 0
+#                first = mid + 1
+#              elsif cmp > 0
+#                last = mid
+#              else
+#                pos = OffsetStart + (@size * (SHA1Size + CrcSize)) + (mid * OffsetSize)
+#                offset = idx[pos, OffsetSize].unpack('N')[0]
+#                return offset
+#              end
+#            else
+#              midsha1 = idx[SHA1Start + mid * EntrySize,SHA1Size]
+#              cmp = midsha1 <=> sha1
+#
+#              if cmp < 0
+#                first = mid + 1
+#              elsif cmp > 0
+#                last = mid
+#              else
+#                pos = OffsetStart + mid * EntrySize
+#                offset = idx[pos,OffsetSize].unpack('N')[0]
+#                return offset
+#              end
+#            end
+#          end
+#          nil
+#        end
 
 sub unpack_object {
     my ( $self, $offset ) = @_;

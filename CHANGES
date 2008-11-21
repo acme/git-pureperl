@@ -1,5 +1,9 @@
 Revision history for Perl module Git::PurePerl:
 
+0.34
+     - speed up finding objects in pack files by using a 
+       binary search algorithm
+
 0.33 Thu Nov 20 09:28:36 GMT 2008
      - add support for version 2 pack index files
      - add support for ref_delta objects in pack files
