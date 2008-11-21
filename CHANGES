@@ -1,6 +1,6 @@
 Revision history for Perl module Git::PurePerl:
 
-0.34
+0.34 Fri Nov 21 17:20:17 GMT 2008
      - speed up finding objects in pack files by using a 
        binary search algorithm
 
