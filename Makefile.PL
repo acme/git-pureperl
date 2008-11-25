@@ -12,6 +12,7 @@ WriteMakefile(
         'Archive::Extract'           => '0',
         'Compress::Raw::Zlib'        => '0',
         'Compress::Zlib'             => '0',
+        'Data::Stream::Bulk'         => '0',
         'Moose'                      => '0',
         'MooseX::StrictConstructor'  => '0',
         'MooseX::Types::Path::Class' => '0',

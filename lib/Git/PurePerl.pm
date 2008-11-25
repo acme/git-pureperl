@@ -3,6 +3,9 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
 use Compress::Zlib qw(uncompress);
+use Data::Stream::Bulk;
+use Data::Stream::Bulk::Array;
+use Data::Stream::Bulk::Path::Class;
 use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Object;
 use Git::PurePerl::Object::Blob;
@@ -111,6 +114,32 @@ sub create_object {
     } else {
         confess "unknown kind $kind";
     }
+}
+
+sub all_sha1s {
+    my $self = shift;
+    my $dir = dir( $self->directory, '.git', 'objects' );
+
+    my $files = Data::Stream::Bulk::Path::Class->new(
+        dir        => $dir,
+        only_files => 1,
+    );
+    my @streams;
+    push @streams, Data::Stream::Bulk::Filter->new(
+        filter => sub {
+            [   map { m{([a-z0-9]{2})/([a-z0-9]{38})}; $1 . $2 }
+                    grep {m{/[a-z0-9]{2}/}} @$_
+            ];
+        },
+        stream => $files,
+    );
+
+    foreach my $pack ( $self->packs ) {
+        push @streams,
+            Data::Stream::Bulk::Array->new( array => [ $pack->all_sha1s ], );
+    }
+
+    return Data::Stream::Bulk::Cat->new( streams => \@streams, );
 }
 
 1;

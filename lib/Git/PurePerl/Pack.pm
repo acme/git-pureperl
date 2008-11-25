@@ -83,25 +83,25 @@ sub open_pack {
     return $fh;
 }
 
-sub get_object_old {
+sub all_sha1s {
     my ( $self, $want_sha1 ) = @_;
-
+    my @sha1s;
     if ( $self->version == 1 ) {
         my $fh  = $self->open_index;
         my $pos = $OffsetStart;
-        warn $self->size . ' objects1';
         foreach my $i ( 1 .. $self->size ) {
             $fh->seek( $pos, 0 ) || die $!;
             $fh->read( my $data, $OffsetSize ) || die $!;
             my $offset = unpack( 'N', $data );
             $fh->read( $data, $SHA1Size ) || die $!;
             my $sha1 = unpack( 'H*', $data );
-            if ( $sha1 eq $want_sha1 ) {
-                return $self->unpack_object($offset);
-            }
+
+            #    if ( $sha1 eq $want_sha1 ) {
+            #        return $self->unpack_object($offset);
+            #    }
+            push @sha1s, $sha1;
             $pos += $EntrySize;
         }
-        return;
 
     } else {
 
@@ -126,22 +126,23 @@ sub get_object_old {
             $data[$i]->[2] = unpack( 'N', $offset );
             $pos += $OffsetSize;
         }
-        warn scalar(@data) . ' objects2';
         foreach my $data (@data) {
             my ( $sha1, $crc, $offset ) = @$data;
-            if ( $sha1 eq $want_sha1 ) {
-                return $self->unpack_object($offset);
-            }
+
+            #      if ( $sha1 eq $want_sha1 ) {
+            #          return $self->unpack_object($offset);
+            #      }
+            push @sha1s, $sha1;
         }
-        return;
 
     }
+    return @sha1s;
 }
 
 sub get_object {
     my ( $self, $want_sha1 ) = @_;
     my @offsets = $self->offsets;
-    my $fh = $self->open_index;
+    my $fh      = $self->open_index;
 
     my $slot = unpack( 'C', pack( 'H*', $want_sha1 ) );
     return unless defined $slot;
@@ -166,8 +167,11 @@ sub get_object {
                 my $offset = unpack( 'N', $data );
                 return $self->unpack_object($offset);
             }
-        } elsif ($self->version == 2) {
-            $fh->seek( $self->global_offset + $OffsetStart + ( $mid * $SHA1Size ), 0 ) || die $!;
+        } elsif ( $self->version == 2 ) {
+            $fh->seek(
+                $self->global_offset + $OffsetStart + ( $mid * $SHA1Size ),
+                0 )
+                || die $!;
             $fh->read( my $data, $SHA1Size ) || die $!;
             my $midsha1 = unpack( 'H*', $data );
             if ( $midsha1 lt $want_sha1 ) {
@@ -176,7 +180,8 @@ sub get_object {
                 $last = $mid;
             } else {
                 my $pos
-                    = $self->global_offset + $OffsetStart
+                    = $self->global_offset 
+                    + $OffsetStart
                     + ( $self->size * ( $SHA1Size + $CrcSize ) )
                     + ( $mid * $OffsetSize );
                 $fh->seek( $pos, 0 ) || die $!;
