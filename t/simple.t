@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 153;
+use Test::More tests => 156;
 use Git::PurePerl;
 
 foreach my $directory qw(test-project test-project-packs test-project-packs2)
