@@ -13,7 +13,7 @@ use Git::PurePerl::Object::Commit;
 use Git::PurePerl::Object::Tree;
 use Git::PurePerl::Pack;
 use Path::Class;
-our $VERSION = '0.34';
+our $VERSION = '0.35';
 
 has 'directory' =>
     ( is => 'ro', isa => 'Path::Class::Dir', required => 1, coerce => 1 );

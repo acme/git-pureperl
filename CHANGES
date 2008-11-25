@@ -1,6 +1,6 @@
 Revision history for Perl module Git::PurePerl:
 
-0.35
+0.35 Tue Nov 25 17:37:56 GMT 2008
      - add Data::Stream::Bulk as a prerequisite
      - add all_sha1s method
 
