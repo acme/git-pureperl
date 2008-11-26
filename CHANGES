@@ -3,6 +3,7 @@ Revision history for Perl module Git::PurePerl:
 0.36
      - add a class to represent tags
      - complain if the directory does not have a .git directory
+     - remove commented-out code
 
 0.35 Tue Nov 25 17:37:56 GMT 2008
      - add Data::Stream::Bulk as a prerequisite

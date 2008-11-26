@@ -95,10 +95,6 @@ sub all_sha1s {
             my $offset = unpack( 'N', $data );
             $fh->read( $data, $SHA1Size ) || die $!;
             my $sha1 = unpack( 'H*', $data );
-
-            #    if ( $sha1 eq $want_sha1 ) {
-            #        return $self->unpack_object($offset);
-            #    }
             push @sha1s, $sha1;
             $pos += $EntrySize;
         }
@@ -128,10 +124,6 @@ sub all_sha1s {
         }
         foreach my $data (@data) {
             my ( $sha1, $crc, $offset ) = @$data;
-
-            #      if ( $sha1 eq $want_sha1 ) {
-            #          return $self->unpack_object($offset);
-            #      }
             push @sha1s, $sha1;
         }
 
@@ -193,43 +185,6 @@ sub get_object {
     }
     return;
 }
-
-# def find_object_in_index(idx, sha1)
-#          slot = sha1[0]
-#          return nil if !slot
-#          first, last = @offsets[slot,2]
-#          while first < last
-#            mid = (first + last) / 2
-#            if @version == 2
-#              midsha1 = idx[OffsetStart + (mid * SHA1Size), SHA1Size]
-#              cmp = midsha1 <=> sha1
-#
-#              if cmp < 0
-#                first = mid + 1
-#              elsif cmp > 0
-#                last = mid
-#              else
-#                pos = OffsetStart + (@size * (SHA1Size + CrcSize)) + (mid * OffsetSize)
-#                offset = idx[pos, OffsetSize].unpack('N')[0]
-#                return offset
-#              end
-#            else
-#              midsha1 = idx[SHA1Start + mid * EntrySize,SHA1Size]
-#              cmp = midsha1 <=> sha1
-#
-#              if cmp < 0
-#                first = mid + 1
-#              elsif cmp > 0
-#                last = mid
-#              else
-#                pos = OffsetStart + mid * EntrySize
-#                offset = idx[pos,OffsetSize].unpack('N')[0]
-#                return offset
-#              end
-#            end
-#          end
-#          nil
-#        end
 
 sub unpack_object {
     my ( $self, $offset ) = @_;
