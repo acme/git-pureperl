@@ -15,6 +15,7 @@ sub BUILD {
     while ( my $line = shift @lines ) {
         last unless $line;
         my ( $key, $value ) = split ' ', $line, 2;
+        next if $key eq 'type';
         $self->$key($value);
     }
     $self->comment( join "\n", @lines );
