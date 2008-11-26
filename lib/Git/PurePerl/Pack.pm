@@ -8,6 +8,9 @@ use IO::File;
 has 'filename' =>
     ( is => 'ro', isa => 'Path::Class::File', required => 1, coerce => 1 );
 
+has 'pack_fh'  => ( is => 'rw', isa => 'IO::File', required => 0 );
+has 'index_fh' => ( is => 'rw', isa => 'IO::File', required => 0 );
+
 has 'version'       => ( is => 'rw', isa => 'Int', required => 0 );
 has 'global_offset' => ( is => 'rw', isa => 'Int', required => 0 );
 
@@ -37,9 +40,18 @@ my $EntrySizeV2   = $SHA1Size + $CrcSize + $OffsetSize;
 
 sub BUILD {
     my $self = shift;
-    my $fh   = $self->open_index;
-    $fh->read( my $signature, 4 );
-    $fh->read( my $version,   4 );
+
+    my $filename = $self->filename;
+    my $pack_fh = IO::File->new($filename) || confess($!);
+    $self->pack_fh($pack_fh);
+
+    my $index_filename = $filename;
+    $index_filename =~ s/\.pack/.idx/;
+    my $index_fh = IO::File->new($index_filename) || confess($!);
+    $self->index_fh($index_fh);
+
+    $index_fh->read( my $signature, 4 );
+    $index_fh->read( my $version,   4 );
     $version = unpack( 'N', $version );
 
     if ( $signature eq "\377tOc" ) {
@@ -57,8 +69,8 @@ sub BUILD {
 
     my @offsets = (0);
     foreach my $i ( 0 .. $FanOutCount - 1 ) {
-        $fh->seek( ( $i * $IdxOffsetSize ) + $self->global_offset, 0 );
-        $fh->read( my $data, $IdxOffsetSize );
+        $index_fh->seek( ( $i * $IdxOffsetSize ) + $self->global_offset, 0 );
+        $index_fh->read( my $data, $IdxOffsetSize );
         my $offset = unpack( 'N', $data );
         confess("pack has discontinuous index") if $offset < $offsets[-1];
         push @offsets, $offset;
@@ -67,33 +79,17 @@ sub BUILD {
     $self->size( $offsets[-1] );
 }
 
-sub open_index {
-    my $self           = shift;
-    my $filename       = $self->filename;
-    my $index_filename = $filename;
-    $index_filename =~ s/\.pack/.idx/;
-    my $fh = IO::File->new($index_filename) || confess($!);
-    return $fh;
-}
-
-sub open_pack {
-    my $self     = shift;
-    my $filename = $self->filename;
-    my $fh       = IO::File->new($filename) || confess($!);
-    return $fh;
-}
-
 sub all_sha1s {
     my ( $self, $want_sha1 ) = @_;
     my @sha1s;
     if ( $self->version == 1 ) {
-        my $fh  = $self->open_index;
-        my $pos = $OffsetStart;
+        my $index_fh = $self->index_fh;
+        my $pos      = $OffsetStart;
         foreach my $i ( 1 .. $self->size ) {
-            $fh->seek( $pos, 0 ) || die $!;
-            $fh->read( my $data, $OffsetSize ) || die $!;
+            $index_fh->seek( $pos, 0 ) || die $!;
+            $index_fh->read( my $data, $OffsetSize ) || die $!;
             my $offset = unpack( 'N', $data );
-            $fh->read( $data, $SHA1Size ) || die $!;
+            $index_fh->read( $data, $SHA1Size ) || die $!;
             my $sha1 = unpack( 'H*', $data );
             push @sha1s, $sha1;
             $pos += $EntrySize;
@@ -101,24 +97,24 @@ sub all_sha1s {
 
     } else {
 
-        my $fh = $self->open_index;
+        my $index_fh = $self->index_fh;
         my @data;
         my $pos = $OffsetStart;
         foreach my $i ( 0 .. $self->size - 1 ) {
-            $fh->seek( $pos + $self->global_offset, 0 ) || die $!;
-            $fh->read( my $sha1, $SHA1Size ) || die $!;
+            $index_fh->seek( $pos + $self->global_offset, 0 ) || die $!;
+            $index_fh->read( my $sha1, $SHA1Size ) || die $!;
             $data[$i] = [ unpack( 'H*', $sha1 ), 0, 0 ];
             $pos += $SHA1Size;
         }
         foreach my $i ( 0 .. $self->size - 1 ) {
-            $fh->seek( $pos + $self->global_offset, 0 ) || die $!;
-            $fh->read( my $crc, $CrcSize ) || die $!;
+            $index_fh->seek( $pos + $self->global_offset, 0 ) || die $!;
+            $index_fh->read( my $crc, $CrcSize ) || die $!;
             $data[$i]->[1] = unpack( 'H*', $crc );
             $pos += $CrcSize;
         }
         foreach my $i ( 0 .. $self->size - 1 ) {
-            $fh->seek( $pos + $self->global_offset, 0 ) || die $!;
-            $fh->read( my $offset, $OffsetSize ) || die $!;
+            $index_fh->seek( $pos + $self->global_offset, 0 ) || die $!;
+            $index_fh->read( my $offset, $OffsetSize ) || die $!;
             $data[$i]->[2] = unpack( 'N', $offset );
             $pos += $OffsetSize;
         }
@@ -133,8 +129,8 @@ sub all_sha1s {
 
 sub get_object {
     my ( $self, $want_sha1 ) = @_;
-    my @offsets = $self->offsets;
-    my $fh      = $self->open_index;
+    my @offsets  = $self->offsets;
+    my $index_fh = $self->index_fh;
 
     my $slot = unpack( 'C', pack( 'H*', $want_sha1 ) );
     return unless defined $slot;
@@ -145,8 +141,8 @@ sub get_object {
         my $mid = int( ( $first + $last ) / 2 );
         if ( $self->version == 1 ) {
 
-            $fh->seek( $SHA1Start + $mid * $EntrySize, 0 ) || die $!;
-            $fh->read( my $data, $SHA1Size ) || die $!;
+            $index_fh->seek( $SHA1Start + $mid * $EntrySize, 0 ) || die $!;
+            $index_fh->read( my $data, $SHA1Size ) || die $!;
             my $midsha1 = unpack( 'H*', $data );
             if ( $midsha1 lt $want_sha1 ) {
                 $first = $mid + 1;
@@ -154,17 +150,17 @@ sub get_object {
                 $last = $mid;
             } else {
                 my $pos = $OffsetStart + $mid * $EntrySize;
-                $fh->seek( $pos, 0 ) || die $!;
-                $fh->read( my $data, $OffsetSize ) || die $!;
+                $index_fh->seek( $pos, 0 ) || die $!;
+                $index_fh->read( my $data, $OffsetSize ) || die $!;
                 my $offset = unpack( 'N', $data );
                 return $self->unpack_object($offset);
             }
         } elsif ( $self->version == 2 ) {
-            $fh->seek(
+            $index_fh->seek(
                 $self->global_offset + $OffsetStart + ( $mid * $SHA1Size ),
                 0 )
                 || die $!;
-            $fh->read( my $data, $SHA1Size ) || die $!;
+            $index_fh->read( my $data, $SHA1Size ) || die $!;
             my $midsha1 = unpack( 'H*', $data );
             if ( $midsha1 lt $want_sha1 ) {
                 $first = $mid + 1;
@@ -176,8 +172,8 @@ sub get_object {
                     + $OffsetStart
                     + ( $self->size * ( $SHA1Size + $CrcSize ) )
                     + ( $mid * $OffsetSize );
-                $fh->seek( $pos, 0 ) || die $!;
-                $fh->read( my $data, $OffsetSize ) || die $!;
+                $index_fh->seek( $pos, 0 ) || die $!;
+                $index_fh->read( my $data, $OffsetSize ) || die $!;
                 my $offset = unpack( 'N', $data );
                 return $self->unpack_object($offset);
             }
@@ -189,11 +185,11 @@ sub get_object {
 sub unpack_object {
     my ( $self, $offset ) = @_;
     my $obj_offset = $offset;
-    my $fh         = $self->open_pack;
+    my $pack_fh    = $self->pack_fh;
 
-    $fh->seek( $offset, 0 ) || die $!;
+    $pack_fh->seek( $offset, 0 ) || die $!;
 
-    $fh->read( my $c, 1 ) || die $!;
+    $pack_fh->read( my $c, 1 ) || die $!;
     $c = unpack( 'C', $c ) || die $!;
 
     my $size = ( $c & 0xf );
@@ -203,7 +199,7 @@ sub unpack_object {
     $offset++;
 
     while ( ( $c & 0x80 ) != 0 ) {
-        $fh->read( $c, 1 ) || die $!;
+        $pack_fh->read( $c, 1 ) || die $!;
         $c = unpack( 'C', $c ) || die $!;
         $size |= ( ( $c & 0x7f ) << $shift );
         $shift  += 7;
@@ -214,7 +210,7 @@ sub unpack_object {
 
     if ( $type eq 'ofs_delta' || $type eq 'ref_delta' ) {
         ( $type, $size, my $content )
-            = $self->unpack_deltified( $fh, $type, $offset, $obj_offset,
+            = $self->unpack_deltified( $pack_fh, $type, $offset, $obj_offset,
             $size );
         return ( $type, $size, $content );
 
@@ -223,7 +219,7 @@ sub unpack_object {
         || $type eq 'blob'
         || $type eq 'tag' )
     {
-        my $content = $self->read_compressed( $fh, $offset, $size );
+        my $content = $self->read_compressed( $pack_fh, $offset, $size );
         return ( $type, $size, $content );
     } else {
         confess "invalid type $type";
