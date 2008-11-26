@@ -28,6 +28,10 @@ has 'packs' => (
 
 sub BUILD {
     my $self = shift;
+    my $git_dir = dir( $self->directory, '.git' );
+    unless ( -d $git_dir ) {
+        confess $self->directory . ' does not contain a .git directory';
+    }
     my $pack_dir = dir( $self->directory, '.git', 'objects', 'pack' );
     my @packs;
     foreach my $filename ( $pack_dir->children ) {
