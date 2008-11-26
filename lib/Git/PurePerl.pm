@@ -14,7 +14,7 @@ use Git::PurePerl::Object::Tag;
 use Git::PurePerl::Object::Tree;
 use Git::PurePerl::Pack;
 use Path::Class;
-our $VERSION = '0.35';
+our $VERSION = '0.36';
 
 has 'directory' =>
     ( is => 'ro', isa => 'Path::Class::Dir', required => 1, coerce => 1 );

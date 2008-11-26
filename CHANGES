@@ -1,6 +1,6 @@
 Revision history for Perl module Git::PurePerl:
 
-0.36
+0.36 Wed Nov 26 21:49:33 GMT 2008
      - add a class to represent tags
      - complain if the directory does not have a .git directory
      - remove commented-out code
