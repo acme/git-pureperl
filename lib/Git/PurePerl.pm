@@ -10,6 +10,7 @@ use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Object;
 use Git::PurePerl::Object::Blob;
 use Git::PurePerl::Object::Commit;
+use Git::PurePerl::Object::Tag;
 use Git::PurePerl::Object::Tree;
 use Git::PurePerl::Pack;
 use Path::Class;
@@ -111,8 +112,15 @@ sub create_object {
             size    => $size,
             content => $content,
         );
+    } elsif ( $kind eq 'tag' ) {
+        return Git::PurePerl::Object::Tag->new(
+            sha1    => $sha1,
+            kind    => $kind,
+            size    => $size,
+            content => $content,
+        );
     } else {
-        confess "unknown kind $kind";
+        confess "unknown kind $kind: $content";
     }
 }
 

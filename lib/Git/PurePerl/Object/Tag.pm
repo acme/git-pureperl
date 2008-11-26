@@ -1,14 +1,13 @@
-package Git::PurePerl::Object::Commit;
+package Git::PurePerl::Object::Tag;
 use Moose;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 extends 'Git::PurePerl::Object';
 
-has 'tree'      => ( is => 'rw', isa => 'Str', required => 0 );
-has 'parent'    => ( is => 'rw', isa => 'Str', required => 0 );
-has 'author'    => ( is => 'rw', isa => 'Str', required => 0 );
-has 'committer' => ( is => 'rw', isa => 'Str', required => 0 );
-has 'comment'   => ( is => 'rw', isa => 'Str', required => 0 );
+has 'object'  => ( is => 'rw', isa => 'Str', required => 0 );
+has 'tag'     => ( is => 'rw', isa => 'Str', required => 0 );
+has 'tagger'  => ( is => 'rw', isa => 'Str', required => 0 );
+has 'comment' => ( is => 'rw', isa => 'Str', required => 0 );
 
 sub BUILD {
     my $self = shift;
