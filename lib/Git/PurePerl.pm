@@ -164,11 +164,36 @@ Git::PurePerl - A Pure Perl interface to Git repositories
 
 =head1 SYNOPSIS
 
+    my $git = Git::PurePerl->new(
+        directory => '/path/to/git/'
+    );
+    $git->master->committer;
+    $git->master->comment;
+    $git->get_object($git->master->tree);
+
 =head1 DESCRIPTION
 
 This module is a Pure Perl interface to Git repositories.
 
 It was mostly based on Grit L<http://grit.rubyforge.org/>.
+
+=head1 METHODS
+
+=over 4
+
+=item master
+
+=item get_object
+
+=item get_object_packed
+
+=item get_object_loose
+
+=item create_object
+
+=item all_sha1s
+
+=back
 
 =head1 AUTHOR
 
