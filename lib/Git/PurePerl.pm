@@ -13,6 +13,9 @@ use Git::PurePerl::Object::Commit;
 use Git::PurePerl::Object::Tag;
 use Git::PurePerl::Object::Tree;
 use Git::PurePerl::Pack;
+use Git::PurePerl::PackIndex;
+use Git::PurePerl::PackIndex::Version1;
+use Git::PurePerl::PackIndex::Version2;
 use Path::Class;
 our $VERSION = '0.36';
 
