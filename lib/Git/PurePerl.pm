@@ -139,11 +139,12 @@ sub all_sha1s {
     my $self = shift;
     my $dir = dir( $self->directory, '.git', 'objects' );
 
+    my @streams;
+
     my $files = Data::Stream::Bulk::Path::Class->new(
         dir        => $dir,
         only_files => 1,
     );
-    my @streams;
     push @streams, Data::Stream::Bulk::Filter->new(
         filter => sub {
             [   map { m{([a-z0-9]{2})/([a-z0-9]{38})}; $1 . $2 }
