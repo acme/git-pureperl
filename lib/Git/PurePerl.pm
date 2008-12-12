@@ -24,6 +24,7 @@ has 'packs' => (
     isa        => 'ArrayRef[Git::PurePerl::Pack]',
     required   => 0,
     auto_deref => 1,
+    lazy_build => 1,
 );
 
 __PACKAGE__->meta->make_immutable;
@@ -34,13 +35,17 @@ sub BUILD {
     unless ( -d $git_dir ) {
         confess $self->directory . ' does not contain a .git directory';
     }
+}
+
+sub _build_packs {
+    my $self = shift;
     my $pack_dir = dir( $self->directory, '.git', 'objects', 'pack' );
     my @packs;
     foreach my $filename ( $pack_dir->children ) {
         next unless $filename =~ /\.pack$/;
         push @packs, Git::PurePerl::Pack->new( filename => $filename );
     }
-    $self->packs( \@packs );
+    return \@packs;
 }
 
 sub master {
