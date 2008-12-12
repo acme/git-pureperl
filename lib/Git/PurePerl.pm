@@ -26,6 +26,8 @@ has 'packs' => (
     auto_deref => 1,
 );
 
+__PACKAGE__->meta->make_immutable;
+
 sub BUILD {
     my $self = shift;
     my $git_dir = dir( $self->directory, '.git' );

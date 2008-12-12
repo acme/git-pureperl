@@ -9,6 +9,8 @@ has 'tag'     => ( is => 'rw', isa => 'Str', required => 0 );
 has 'tagger'  => ( is => 'rw', isa => 'Str', required => 0 );
 has 'comment' => ( is => 'rw', isa => 'Str', required => 0 );
 
+__PACKAGE__->meta->make_immutable;
+
 sub BUILD {
     my $self = shift;
     my @lines = split "\n", $self->content;

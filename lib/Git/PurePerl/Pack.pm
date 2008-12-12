@@ -18,6 +18,8 @@ has 'offsets' =>
     ( is => 'rw', isa => 'ArrayRef[Int]', required => 0, auto_deref => 1, );
 has 'size' => ( is => 'rw', isa => 'Int', required => 0 );
 
+__PACKAGE__->meta->make_immutable;
+
 my @TYPES = ( 'none', 'commit', 'tree', 'blob', 'tag', '', 'ofs_delta',
     'ref_delta' );
 my $OBJ_NONE      = 0;
