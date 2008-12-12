@@ -23,15 +23,7 @@ my $OBJ_TAG       = 4;
 my $OBJ_OFS_DELTA = 6;
 my $OBJ_REF_DELTA = 7;
 
-my $FanOutCount   = 256;
 my $SHA1Size      = 20;
-my $IdxOffsetSize = 4;
-my $OffsetSize    = 4;
-my $CrcSize       = 4;
-my $OffsetStart   = $FanOutCount * $IdxOffsetSize;
-my $SHA1Start     = $OffsetStart + $OffsetSize;
-my $EntrySize     = $OffsetSize + $SHA1Size;
-my $EntrySizeV2   = $SHA1Size + $CrcSize + $OffsetSize;
 
 sub BUILD {
     my $self = shift;
