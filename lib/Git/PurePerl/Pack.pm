@@ -106,8 +106,7 @@ sub unpack_object {
 
     if ( $type eq 'ofs_delta' || $type eq 'ref_delta' ) {
         ( $type, $size, my $content )
-            = $self->unpack_deltified( $fh, $type, $offset, $obj_offset,
-            $size );
+            = $self->unpack_deltified( $type, $offset, $obj_offset, $size );
         return ( $type, $size, $content );
 
     } elsif ( $type eq 'commit'
@@ -115,7 +114,7 @@ sub unpack_object {
         || $type eq 'blob'
         || $type eq 'tag' )
     {
-        my $content = $self->read_compressed( $fh, $offset, $size );
+        my $content = $self->read_compressed( $offset, $size );
         return ( $type, $size, $content );
     } else {
         confess "invalid type $type";
@@ -123,7 +122,9 @@ sub unpack_object {
 }
 
 sub read_compressed {
-    my ( $self, $fh, $offset, $size ) = @_;
+    my ( $self, $offset, $size ) = @_;
+    my $fh = $self->fh;
+
     $fh->seek( $offset, 0 ) || die $!;
     my ( $deflate, $status ) = Compress::Raw::Zlib::Inflate->new(
         -AppendOutput => 1,
@@ -140,7 +141,8 @@ sub read_compressed {
 }
 
 sub unpack_deltified {
-    my ( $self, $fh, $type, $offset, $obj_offset, $size ) = @_;
+    my ( $self, $type, $offset, $obj_offset, $size ) = @_;
+    my $fh = $self->fh;
 
     my $base;
 
@@ -169,7 +171,7 @@ sub unpack_deltified {
 
     }
 
-    my $delta = $self->read_compressed( $fh, $offset, $size );
+    my $delta = $self->read_compressed( $offset, $size );
     my $new = $self->patch_delta( $base, $delta );
 
     return ( $type, length($new), $new );
