@@ -7,6 +7,7 @@ Revision history for Perl module Git::PurePerl:
      - simplify the code by splitting pack index reading into
        Git::PurePerl::PackIndex::Version1 and 
        Git::PurePerl::PackIndex::Version2
+     - minor tidying of code
 
 0.36 Wed Nov 26 21:49:33 GMT 2008
      - add a class to represent tags
