@@ -7,6 +7,7 @@ use Data::Stream::Bulk;
 use Data::Stream::Bulk::Array;
 use Data::Stream::Bulk::Path::Class;
 use Git::PurePerl::DirectoryEntry;
+use Git::PurePerl::Loose;
 use Git::PurePerl::Object;
 use Git::PurePerl::Object::Blob;
 use Git::PurePerl::Object::Commit;
@@ -21,6 +22,13 @@ our $VERSION = '0.37';
 
 has 'directory' =>
     ( is => 'ro', isa => 'Path::Class::Dir', required => 1, coerce => 1 );
+
+has 'loose' => (
+    is         => 'rw',
+    isa        => 'Git::PurePerl::Loose',
+    required   => 0,
+    lazy_build => 1,
+);
 
 has 'packs' => (
     is         => 'rw',
@@ -42,6 +50,12 @@ sub BUILD {
     unless ( -d $git_dir ) {
         confess $self->directory . ' does not contain a .git directory';
     }
+}
+
+sub _build_loose {
+    my $self = shift;
+    my $loose_dir = dir( $self->directory, '.git', 'objects' );
+    return Git::PurePerl::Loose->new( directory => $loose_dir );
 }
 
 sub _build_packs {
@@ -94,17 +108,10 @@ sub get_object_packed {
 sub get_object_loose {
     my ( $self, $sha1 ) = @_;
 
-    my $filename = file(
-        $self->directory, '.git', 'objects',
-        substr( $sha1, 0, 2 ),
-        substr( $sha1, 2 )
-    );
-
-    my $compressed = $filename->slurp;
-    my $data       = uncompress($compressed);
-    my ( $kind, $size, $content ) = $data =~ /^(\w+) (\d+)\0(.+)$/s;
-
-    return $self->create_object( $sha1, $kind, $size, $content );
+    my ( $kind, $size, $content ) = $self->loose->get_object($sha1);
+    if ( $kind && $size && $content ) {
+        return $self->create_object( $sha1, $kind, $size, $content );
+    }
 }
 
 sub create_object {
@@ -147,19 +154,7 @@ sub all_sha1s {
     my $dir = dir( $self->directory, '.git', 'objects' );
 
     my @streams;
-
-    my $files = Data::Stream::Bulk::Path::Class->new(
-        dir        => $dir,
-        only_files => 1,
-    );
-    push @streams, Data::Stream::Bulk::Filter->new(
-        filter => sub {
-            [   map { m{([a-z0-9]{2})/([a-z0-9]{38})}; $1 . $2 }
-                    grep {m{/[a-z0-9]{2}/}} @$_
-            ];
-        },
-        stream => $files,
-    );
+    push @streams, $self->loose->all_sha1s;
 
     foreach my $pack ( $self->packs ) {
         push @streams,
