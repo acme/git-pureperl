@@ -23,7 +23,7 @@ my $OBJ_TAG       = 4;
 my $OBJ_OFS_DELTA = 6;
 my $OBJ_REF_DELTA = 7;
 
-my $SHA1Size      = 20;
+my $SHA1Size = 20;
 
 sub BUILD {
     my $self = shift;
@@ -62,7 +62,8 @@ sub BUILD {
 
 sub all_sha1s {
     my ( $self, $want_sha1 ) = @_;
-    return $self->index->all_sha1s;
+    return Data::Stream::Bulk::Array->new(
+        array => [ $self->index->all_sha1s ] );
 }
 
 sub get_object {

@@ -157,8 +157,7 @@ sub all_sha1s {
     push @streams, $self->loose->all_sha1s;
 
     foreach my $pack ( $self->packs ) {
-        push @streams,
-            Data::Stream::Bulk::Array->new( array => [ $pack->all_sha1s ], );
+        push @streams, $pack->all_sha1s;
     }
 
     return Data::Stream::Bulk::Cat->new( streams => \@streams, );
