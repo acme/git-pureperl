@@ -34,6 +34,10 @@ __PACKAGE__->meta->make_immutable;
 
 sub BUILD {
     my $self = shift;
+
+    unless ( -d $self->directory ) {
+        confess $self->directory . ' is not a directory';
+    }
     my $git_dir = dir( $self->directory, '.git' );
     unless ( -d $git_dir ) {
         confess $self->directory . ' does not contain a .git directory';
@@ -163,6 +167,62 @@ sub all_sha1s {
     }
 
     return Data::Stream::Bulk::Cat->new( streams => \@streams, );
+}
+
+sub init {
+    my ( $class, %arguments ) = @_;
+    my $directory = $arguments{directory} || confess "No directory passed";
+    my $git_dir = dir( $directory, '.git' );
+
+    dir($directory)->mkpath;
+    dir($git_dir)->mkpath;
+    dir( $git_dir, 'refs',    'tags' )->mkpath;
+    dir( $git_dir, 'objects', 'info' )->mkpath;
+    dir( $git_dir, 'objects', 'pack' )->mkpath;
+    dir( $git_dir, 'branches' )->mkpath;
+    dir( $git_dir, 'hooks' )->mkpath;
+
+    $class->_add_file(
+        file( $git_dir, 'config' ),
+        "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n"
+    );
+    $class->_add_file( file( $git_dir, 'description' ),
+        "Unnamed repository; edit this file to name it for gitweb.\n" );
+    $class->_add_file(
+        file( $git_dir, 'hooks', 'applypatch-msg' ),
+        "# add shell script and make executable to enable\n"
+    );
+    $class->_add_file( file( $git_dir, 'hooks', 'post-commit' ),
+        "# add shell script and make executable to enable\n" );
+    $class->_add_file(
+        file( $git_dir, 'hooks', 'post-receive' ),
+        "# add shell script and make executable to enable\n"
+    );
+    $class->_add_file( file( $git_dir, 'hooks', 'post-update' ),
+        "# add shell script and make executable to enable\n" );
+    $class->_add_file(
+        file( $git_dir, 'hooks', 'pre-applypatch' ),
+        "# add shell script and make executable to enable\n"
+    );
+    $class->_add_file( file( $git_dir, 'hooks', 'pre-commit' ),
+        "# add shell script and make executable to enable\n" );
+    $class->_add_file( file( $git_dir, 'hooks', 'pre-rebase' ),
+        "# add shell script and make executable to enable\n" );
+    $class->_add_file( file( $git_dir, 'hooks', 'update' ),
+        "# add shell script and make executable to enable\n" );
+
+    dir( $git_dir, 'info' )->mkpath;
+    $class->_add_file( file( $git_dir, 'info', 'exclude' ),
+        "# *.[oa]\n# *~\n" );
+
+    return $class->new(%arguments);
+}
+
+sub _add_file {
+    my ( $class, $filename, $contents ) = @_;
+    my $fh = $filename->openw || confess "Error opening to $filename: $!";
+    $fh->print($contents) || confess "Error writing to $filename: $!";
+    $fh->close || confess "Error closing $filename: $!";
 }
 
 1;

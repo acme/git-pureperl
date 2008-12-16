@@ -1,5 +1,8 @@
 Revision history for Perl module Git::PurePerl:
 
+0.38
+     - add init() method to create a new repository
+
 0.37 Fri Dec 12 16:18:02 GMT 2008
      - add minimal docs (thanks to tokuhirom)
      - speed everything up by making the classes immutable
