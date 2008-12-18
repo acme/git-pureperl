@@ -18,7 +18,7 @@ use Git::PurePerl::PackIndex;
 use Git::PurePerl::PackIndex::Version1;
 use Git::PurePerl::PackIndex::Version2;
 use Path::Class;
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 has 'directory' =>
     ( is => 'ro', isa => 'Path::Class::Dir', required => 1, coerce => 1 );
