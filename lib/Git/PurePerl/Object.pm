@@ -13,12 +13,16 @@ has 'sha1' => ( is => 'ro', isa => 'Str', required => 0, lazy_build => 1 );
 __PACKAGE__->meta->make_immutable;
 
 sub _build_sha1 {
-    my $self   = shift;
-    my $string = $self->kind . ' ' . $self->size . "\000" . $self->content;
+    my $self = shift;
     my $sha1 = Digest::SHA1->new;
-    $sha1->add($string);
+    $sha1->add( $self->raw );
     my $sha1_hex = $sha1->hexdigest;
     return $sha1_hex;
+}
+
+sub raw {
+    my $self = shift;
+    return $self->kind . ' ' . $self->size . "\000" . $self->content;
 }
 
 1;
