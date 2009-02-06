@@ -164,6 +164,11 @@ sub all_sha1s {
     return Data::Stream::Bulk::Cat->new( streams => \@streams, );
 }
 
+sub put_object {
+    my ( $self, $object ) = @_;
+    $self->loose->put_object($object);
+}
+
 sub init {
     my ( $class, %arguments ) = @_;
     my $directory = $arguments{directory} || confess "No directory passed";

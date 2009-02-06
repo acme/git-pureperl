@@ -2,7 +2,7 @@ package Git::PurePerl::Loose;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
-use Compress::Zlib qw(uncompress);
+use Compress::Zlib qw(compress uncompress);
 use Path::Class;
 
 has 'directory' => (
@@ -24,6 +24,20 @@ sub get_object {
     my $data       = uncompress($compressed);
     my ( $kind, $size, $content ) = $data =~ /^(\w+) (\d+)\0(.+)$/s;
     return ( $kind, $size, $content );
+}
+
+sub put_object {
+    my ( $self, $object ) = @_;
+
+    my $filename = file(
+        $self->directory,
+        substr( $object->sha1, 0, 2 ),
+        substr( $object->sha1, 2 )
+    );
+    $filename->parent->mkpath;
+    my $compressed = compress( $object->raw );
+    my $fh         = $filename->openw;
+    $fh->print($compressed) || die "Error writing to $filename: $!";
 }
 
 sub all_sha1s {
