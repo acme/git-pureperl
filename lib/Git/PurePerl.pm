@@ -167,6 +167,18 @@ sub all_sha1s {
 sub put_object {
     my ( $self, $object ) = @_;
     $self->loose->put_object($object);
+
+    if ( $object->kind eq 'commit' ) {
+        my $master
+            = file( $self->directory, '.git', 'refs', 'heads', 'master' );
+        $master->parent->mkpath;
+        my $fh = $master->openw;
+        $fh->print( $object->sha1 ) || die "Error writing to $master";
+        my $head
+            = file( $self->directory, '.git', 'HEAD' );
+        my $fh = $head->openw;
+        $fh->print( 'ref: refs/heads/master' ) || die "Error writing to $head";
+    }
 }
 
 sub init {
