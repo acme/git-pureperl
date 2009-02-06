@@ -8,8 +8,17 @@ enum 'ObjectKind' => qw(commit tree blob tag);
 has 'kind'    => ( is => 'ro', isa => 'ObjectKind', required => 1 );
 has 'size'    => ( is => 'ro', isa => 'Int',        required => 1 );
 has 'content' => ( is => 'ro', isa => 'Str',        required => 1 );
-has 'sha1'    => ( is => 'ro', isa => 'Str',        required => 1 );
+has 'sha1' => ( is => 'ro', isa => 'Str', required => 0, lazy_build => 1 );
 
 __PACKAGE__->meta->make_immutable;
+
+sub _build_sha1 {
+    my $self   = shift;
+    my $string = $self->kind . ' ' . $self->size . "\000" . $self->content;
+    my $sha1 = Digest::SHA1->new;
+    $sha1->add($string);
+    my $sha1_hex = $sha1->hexdigest;
+    return $sha1_hex;
+}
 
 1;

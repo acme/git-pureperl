@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 156;
+use Test::More tests => 174;
 use Git::PurePerl;
 
 foreach my $directory qw(test-project test-project-packs test-project-packs2)
@@ -18,7 +18,8 @@ foreach my $directory qw(test-project test-project-packs test-project-packs2)
         qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
     like( $commit->committer,
         qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    is( $commit->comment, 'add again' );
+    is( $commit->comment,     'add again' );
+    is( $commit->_build_sha1, $commit->sha1 );
 
     my $tree = $git->get_object( $commit->tree );
     is( $tree->kind, 'tree' );
@@ -37,6 +38,7 @@ foreach my $directory qw(test-project test-project-packs test-project-packs2)
 hello world, again
 '
     );
+    is( $blob->_build_sha1, $blob->sha1 );
 
     $commit = $git->get_object( $commit->parent );
     is( $commit->kind, 'commit' );
@@ -48,7 +50,8 @@ hello world, again
         qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
     like( $commit->committer,
         qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    is( $commit->comment, 'add emphasis' );
+    is( $commit->comment,     'add emphasis' );
+    is( $commit->_build_sha1, $commit->sha1 );
 
     $tree = $git->get_object( $commit->tree );
     is( $tree->kind, 'tree' );
@@ -66,6 +69,7 @@ hello world, again
     is( $blob->content, 'hello world!
 '
     );
+    is( $blob->_build_sha1, $blob->sha1 );
 
     $commit = $git->get_object( $commit->parent );
     is( $commit->kind, 'commit' );
@@ -77,7 +81,8 @@ hello world, again
         qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
     like( $commit->committer,
         qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    is( $commit->comment, 'initial commit' );
+    is( $commit->comment,     'initial commit' );
+    is( $commit->_build_sha1, $commit->sha1 );
 
     $tree = $git->get_object( $commit->tree );
     is( $tree->kind, 'tree' );
@@ -95,6 +100,7 @@ hello world, again
     is( $blob->content, 'hello world
 '
     );
+    is( $blob->_build_sha1, $blob->sha1 );
 
     is( $git->all_sha1s->all, 9 );
 }

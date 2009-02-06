@@ -6,6 +6,7 @@ use Compress::Zlib qw(uncompress);
 use Data::Stream::Bulk;
 use Data::Stream::Bulk::Array;
 use Data::Stream::Bulk::Path::Class;
+use Digest::SHA1;
 use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Loose;
 use Git::PurePerl::Object;
