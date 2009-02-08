@@ -34,6 +34,41 @@ sub connect {
     return \%sha1s;
 }
 
+sub fetch_pack {
+    my ( $self, $sha1 ) = @_;
+    $self->send_line("want $sha1 side-band-64k\n");
+
+#send_line(
+#    "want 0c7b3d23c0f821e58cd20e60d5e63f5ed12ef391 multi_ack side-band-64k ofs-delta\n"
+#);
+    $self->send_line('');
+    $self->send_line('done');
+
+    my $pack;
+
+    while ( my $line = $self->read_line() ) {
+        if ( $line =~ s/^\x02// ) {
+            print $line;
+        } elsif ( $line =~ /^NAK\n/ ) {
+
+            #            warn "[NAK]";
+        } elsif ( $line =~ /^\x01PACK/ ) {
+            $pack = $line;
+
+            #            use YAML;
+            #            warn Dump $line;
+        } elsif ( $line =~ /^\x01}/ ) {
+
+            #            warn "[}]";
+        } else {
+            die $line;
+        }
+
+        #say "s $line";
+    }
+    return $pack;
+}
+
 sub send_line {
     my ( $self, $line ) = @_;
     my $length = length($line);
