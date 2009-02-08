@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More tests => 20;
 use Git::PurePerl;
 use Path::Class;
 
@@ -14,13 +14,15 @@ isa_ok( $git, 'Git::PurePerl', 'can init' );
 my @all_sha1s = $git->all_sha1s->all;
 is( @all_sha1s, 0, 'does not contain any objects' );
 
-my $hello = Git::PurePerl::Object::Blob->new( content => 'hello', );
+my $hello = Git::PurePerl::NewObject::Blob->new( content => 'hello' );
 $git->put_object($hello);
+is( $hello->sha1, 'b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0' );
 is( $git->get_object('b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0')->content,
     'hello' );
 
-my $there = Git::PurePerl::Object::Blob->new( content => 'there', );
+my $there = Git::PurePerl::NewObject::Blob->new( content => 'there' );
 $git->put_object($there);
+is( $there->sha1, 'c78ee1a5bdf46d22da300b68d50bc45c587c3293' );
 is( $git->get_object('c78ee1a5bdf46d22da300b68d50bc45c587c3293')->content,
     'there' );
 
@@ -34,11 +36,9 @@ my $there_de = Git::PurePerl::DirectoryEntry->new(
     filename => 'there.txt',
     sha1     => $there->sha1,
 );
-my $tree = Git::PurePerl::Object::Tree->new(
-    kind              => 'tree',
-    directory_entries => [ $hello_de, $there_de ]
-);
-$tree->update_content;
+my $tree = Git::PurePerl::NewObject::Tree->new(
+    directory_entries => [ $hello_de, $there_de ] );
+is( $tree->sha1, '6d991aebc86bd09e86d74bb84bb9ebfb97e18026' );
 $git->put_object($tree);
 my $tree2 = $git->get_object('6d991aebc86bd09e86d74bb84bb9ebfb97e18026');
 is( $tree2->kind, 'tree' );
@@ -54,8 +54,8 @@ is( $directory_entry2->mode,     '100644' );
 is( $directory_entry2->filename, 'there.txt' );
 is( $directory_entry2->sha1,     'c78ee1a5bdf46d22da300b68d50bc45c587c3293' );
 
-my $commit = Git::PurePerl::Object::Commit->new( tree => $tree->sha1 );
-$commit->update_content;
+my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree->sha1 );
+is( $commit->sha1, 'd75f1437e0c19c36f9b52312eeb6b0200dbd22ac' );
 $git->put_object($commit);
 
 my $commit2 = $git->get_object('d75f1437e0c19c36f9b52312eeb6b0200dbd22ac');

@@ -2,6 +2,11 @@ CHANGES
 lib/Git/PurePerl.pm
 lib/Git/PurePerl/DirectoryEntry.pm
 lib/Git/PurePerl/Loose.pm
+lib/Git/PurePerl/NewObject.pm
+lib/Git/PurePerl/NewObject/Blob.pm
+lib/Git/PurePerl/NewObject/Commit.pm
+lib/Git/PurePerl/NewObject/Tag.pm
+lib/Git/PurePerl/NewObject/Tree.pm
 lib/Git/PurePerl/Object.pm
 lib/Git/PurePerl/Object/Blob.pm
 lib/Git/PurePerl/Object/Commit.pm

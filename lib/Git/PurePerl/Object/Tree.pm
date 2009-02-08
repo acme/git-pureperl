@@ -39,16 +39,4 @@ sub BUILD {
     $self->directory_entries( \@directory_entries );
 }
 
-sub update_content {
-    my $self = shift;
-    my $content;
-    foreach my $de ( $self->directory_entries ) {
-        $content
-            .= $de->mode . ' '
-            . $de->filename . "\0"
-            . pack( 'H*', $de->sha1 );
-    }
-   $self->content($content);
-}
-
 1;
