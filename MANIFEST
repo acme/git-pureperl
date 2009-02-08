@@ -16,11 +16,13 @@ lib/Git/PurePerl/Pack.pm
 lib/Git/PurePerl/PackIndex.pm
 lib/Git/PurePerl/PackIndex/Version1.pm
 lib/Git/PurePerl/PackIndex/Version2.pm
+lib/Git/PurePerl/Protocol.pm
 Makefile.PL
 MANIFEST			This list of files
 README
 t/00_setup.t
 t/init.t
+t/protocol.t
 t/simple.t
 test-project-packs.tgz
 test-project-packs2.tgz

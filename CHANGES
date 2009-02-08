@@ -4,6 +4,7 @@ Revision history for Perl module Git::PurePerl:
      - add a method to generate the sha1 of an object
      - add a raw method to objects
      - add new set of classes to add objects
+     - add class to talk the git protocol
 
 0.38 Thu Dec 18 10:26:49 GMT 2008
      - add init() method to create a new repository
