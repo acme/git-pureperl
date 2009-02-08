@@ -50,18 +50,10 @@ sub fetch_pack {
         if ( $line =~ s/^\x02// ) {
             print $line;
         } elsif ( $line =~ /^NAK\n/ ) {
-
-            #            warn "[NAK]";
-        } elsif ( $line =~ /^\x01PACK/ ) {
-            $pack = $line;
-
-            #            use YAML;
-            #            warn Dump $line;
-        } elsif ( $line =~ /^\x01}/ ) {
-
-            #            warn "[}]";
+        } elsif ( $line =~ s/^\x01// ) {
+            $pack .= $line;
         } else {
-            die $line;
+            die "Unknown line: $line";
         }
 
         #say "s $line";
