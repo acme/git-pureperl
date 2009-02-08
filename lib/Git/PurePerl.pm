@@ -172,12 +172,12 @@ sub put_object {
         my $master
             = file( $self->directory, '.git', 'refs', 'heads', 'master' );
         $master->parent->mkpath;
-        my $fh = $master->openw;
-        $fh->print( $object->sha1 ) || die "Error writing to $master";
-        my $head
-            = file( $self->directory, '.git', 'HEAD' );
-        my $fh = $head->openw;
-        $fh->print( 'ref: refs/heads/master' ) || die "Error writing to $head";
+        my $master_fh = $master->openw;
+        $master_fh->print( $object->sha1 ) || die "Error writing to $master";
+        my $head = file( $self->directory, '.git', 'HEAD' );
+        my $head_fh = $head->openw;
+        $head_fh->print('ref: refs/heads/master')
+            || die "Error writing to $head";
     }
 }
 
