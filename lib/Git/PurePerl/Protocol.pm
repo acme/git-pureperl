@@ -19,8 +19,7 @@ sub connect {
     $socket->autoflush(1) || die $!;
     $self->socket($socket);
 
-    $self->send_line(
-        "git-upload-pack " . $self->project . "\000host=localhost\000" );
+    $self->send_line( "git-upload-pack " . $self->project );
 
     my %sha1s;
     while ( my $line = $self->read_line() ) {
