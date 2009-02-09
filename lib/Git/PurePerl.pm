@@ -88,7 +88,7 @@ sub master {
     } else {
         my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
         my $content = $packed_refs->slurp
-            || confess('Missing refs/heads/master');
+            || confess('Missing packed-refs');
         foreach my $line ( split "\n", $content ) {
             next if $line =~ /^#/;
             ( $sha1, my $name ) = split ' ', $line;
