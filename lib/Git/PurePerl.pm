@@ -238,6 +238,22 @@ sub init {
     return $class->new(%arguments);
 }
 
+sub checkout {
+    my ( $self, $directory ) = @_;
+    my $master = $self->master;
+    my $tree   = $self->get_object( $master->tree );
+    foreach my $directory_entry ( $tree->directory_entries ) {
+        my $filename = file( $directory, $directory_entry->filename );
+        my $sha1     = $directory_entry->sha1;
+        my $object   = $self->get_object($sha1);
+        if ( $object->kind eq 'blob' ) {
+            $self->_add_file( $filename, $object->content );
+        } else {
+            die $object->kind;
+        }
+    }
+}
+
 sub _add_file {
     my ( $class, $filename, $contents ) = @_;
     my $fh = $filename->openw || confess "Error opening to $filename: $!";

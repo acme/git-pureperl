@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 20;
+use Test::More tests => 23;
 use Git::PurePerl;
 use Path::Class;
 
@@ -66,4 +66,18 @@ isa_ok( $git, 'Git::PurePerl', 'can get object' );
 
 @all_sha1s = $git->all_sha1s->all;
 is( @all_sha1s, 4, 'contains four objects' );
+
+my $checkout_directory = dir('t/checkout');
+$checkout_directory->rmtree;
+$checkout_directory->mkpath;
+$git->checkout($checkout_directory);
+is_deeply(
+    [ sort $checkout_directory->children ],
+    [ 't/checkout/hello.txt', 't/checkout/there.txt' ],
+    'checkout has two files'
+);
+is( file('t/checkout/hello.txt')->slurp,
+    'hello', 'hello.txt has latest content' );
+is( file('t/checkout/there.txt')->slurp,
+    'there', 'there.txt has latest content' );
 

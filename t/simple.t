@@ -1,8 +1,11 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 156;
+use Test::More tests => 162;
 use Git::PurePerl;
+use Path::Class;
+
+my $checkout_directory = dir('t/checkout');
 
 foreach my $directory qw(test-project test-project-packs test-project-packs2)
 {
@@ -97,4 +100,14 @@ hello world, again
     );
 
     is( $git->all_sha1s->all, 9 );
+
+    $checkout_directory->rmtree;
+    $checkout_directory->mkpath;
+    $git->checkout($checkout_directory);
+    is_deeply( [ $checkout_directory->children ],
+        ['t/checkout/file.txt'], 'checkout has one file' );
+    is( file('t/checkout/file.txt')->slurp, 'hello world!
+hello world, again
+', 'checkout has latest content'
+    );
 }
