@@ -78,6 +78,27 @@ sub _build_packs {
     return \@packs;
 }
 
+sub refs {
+    my $self = shift;
+    my @refs;
+    foreach my $type (qw(heads remotes tags)) {
+        my $dir = dir( $self->directory, '.git', 'refs', $type );
+        next unless -d $dir;
+        foreach my $file ( $dir->children ) {
+            push @refs, "refs/$type/" . $file->basename;
+        }
+    }
+    my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
+    if ( -f $packed_refs ) {
+        foreach my $line ( $packed_refs->slurp( chomp => 1 ) ) {
+            next if $line =~ /^#/;
+            my ( $sha1, my $name ) = split ' ', $line;
+            push @refs, $name;
+        }
+    }
+    return @refs;
+}
+
 sub master {
     my $self = shift;
     my $master = file( $self->directory, '.git', 'refs', 'heads', 'master' );

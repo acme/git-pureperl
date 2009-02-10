@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 24;
 use Git::PurePerl;
 use Path::Class;
 
@@ -80,4 +80,6 @@ is( file('t/checkout/hello.txt')->slurp,
     'hello', 'hello.txt has latest content' );
 is( file('t/checkout/there.txt')->slurp,
     'there', 'there.txt has latest content' );
+
+is_deeply( [ $git->refs ], ['refs/heads/master'], 'have ref master' );
 

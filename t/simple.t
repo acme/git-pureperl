@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 162;
+use Test::More tests => 165;
 use Git::PurePerl;
 use Path::Class;
 
@@ -110,4 +110,6 @@ hello world, again
 hello world, again
 ', 'checkout has latest content'
     );
+
+    is_deeply( [ $git->refs ], ['refs/heads/master'], 'have ref master' );
 }
