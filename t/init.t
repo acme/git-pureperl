@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 24;
+use Test::More tests => 25;
 use Git::PurePerl;
 use Path::Class;
 
@@ -83,3 +83,8 @@ is( file('t/checkout/there.txt')->slurp,
 
 is_deeply( [ $git->refs ], ['refs/heads/master'], 'have ref master' );
 
+isa_ok(
+    $git->ref('refs/heads/master'),
+    'Git::PurePerl::Object::Commit',
+    'have master commit'
+);

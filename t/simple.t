@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 165;
+use Test::More tests => 168;
 use Git::PurePerl;
 use Path::Class;
 
@@ -112,4 +112,9 @@ hello world, again
     );
 
     is_deeply( [ $git->refs ], ['refs/heads/master'], 'have ref master' );
+    isa_ok(
+        $git->ref('refs/heads/master'),
+        'Git::PurePerl::Object::Commit',
+        'have master commit'
+    );
 }
