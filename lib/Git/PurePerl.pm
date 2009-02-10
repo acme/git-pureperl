@@ -130,22 +130,7 @@ sub ref {
 
 sub master {
     my $self = shift;
-    my $master = file( $self->directory, '.git', 'refs', 'heads', 'master' );
-    my $sha1;
-    if ( -f $master ) {
-        $sha1 = $master->slurp || confess('Missing refs/heads/master');
-        chomp $sha1;
-    } else {
-        my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
-        my $content = $packed_refs->slurp
-            || confess('Missing packed-refs');
-        foreach my $line ( split "\n", $content ) {
-            next if $line =~ /^#/;
-            ( $sha1, my $name ) = split ' ', $line;
-            last if $name eq 'refs/heads/master';
-        }
-    }
-    return $self->get_object($sha1);
+    return $self->ref('refs/heads/master');
 }
 
 sub get_object {
