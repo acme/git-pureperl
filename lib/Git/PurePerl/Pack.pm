@@ -69,6 +69,7 @@ sub all_sha1s {
 sub get_object {
     my ( $self, $want_sha1 ) = @_;
     my $offset = $self->index->get_object_offset($want_sha1);
+    return unless $offset;
     return $self->unpack_object($offset);
 }
 
