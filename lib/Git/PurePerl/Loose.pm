@@ -19,6 +19,7 @@ sub get_object {
 
     my $filename
         = file( $self->directory, substr( $sha1, 0, 2 ), substr( $sha1, 2 ) );
+    return unless -f $filename;
 
     my $compressed = $filename->slurp;
     my $data       = uncompress($compressed);
