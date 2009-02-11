@@ -7,6 +7,7 @@ use Data::Stream::Bulk;
 use Data::Stream::Bulk::Array;
 use Data::Stream::Bulk::Path::Class;
 use Digest::SHA1;
+use File::Find::Rule;
 use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Loose;
 use Git::PurePerl::Object;
@@ -102,19 +103,18 @@ sub refs {
 sub ref {
     my ( $self, $wantref ) = @_;
     my @refs;
-    foreach my $type (qw(heads remotes tags)) {
-        my $dir = dir( $self->directory, '.git', 'refs', $type );
-        next unless -d $dir;
-        foreach my $file ( $dir->children ) {
-            my $ref = "refs/$type/" . $file->basename;
-            if ( $ref eq $wantref ) {
-                my $sha1 = $file->slurp
-                    || confess("Error reading $file: $!");
-                chomp $sha1;
-                return $self->get_object($sha1);
-            }
+    my $dir = dir( $self->directory, '.git', 'refs' );
+    next unless -d $dir;
+    foreach my $file ( File::Find::Rule->new->file->in($dir) ) {
+        my $ref = 'refs/' . file($file)->relative($dir);
+        if ( $ref eq $wantref ) {
+            my $sha1 = file($file)->slurp
+                || confess("Error reading $file: $!");
+            chomp $sha1;
+            return $self->get_object($sha1);
         }
     }
+
     my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
     if ( -f $packed_refs ) {
         foreach my $line ( $packed_refs->slurp( chomp => 1 ) ) {
