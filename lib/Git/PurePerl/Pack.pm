@@ -81,8 +81,9 @@ sub unpack_object {
     $fh->read( my $c, 1 ) || die $!;
     $c = unpack( 'C', $c ) || die $!;
 
-    my $size = ( $c & 0xf );
-    my $type = ( $c >> 4 ) & 7;
+    my $size        = ( $c & 0xf );
+    my $type_number = ( $c >> 4 ) & 7;
+    my $type = $TYPES[$type_number] || confess "invalid type $type_number";
 
     my $shift = 4;
     $offset++;
@@ -94,8 +95,6 @@ sub unpack_object {
         $shift  += 7;
         $offset += 1;
     }
-
-    $type = $TYPES[$type];
 
     if ( $type eq 'ofs_delta' || $type eq 'ref_delta' ) {
         ( $type, $size, my $content )
