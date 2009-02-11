@@ -275,7 +275,7 @@ sub init {
 
 sub checkout {
     my ( $self, $directory, $tree ) = @_;
-    $tree ||= $self->get_object( $self->master )->tree;
+    $tree ||= $self->get_object( $self->master->tree );
     confess("Missing tree") unless $tree;
     foreach my $directory_entry ( $tree->directory_entries ) {
         my $filename = file( $directory, $directory_entry->filename );
