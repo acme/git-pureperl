@@ -10,6 +10,7 @@ Revision history for Perl module Git::PurePerl:
      - add a method to return the commit for a reference
      - fix bug where it would not find an object if there was a
        mixture of packs and loose objects
+     - fix bug to do with empty files
 
 0.38 Thu Dec 18 10:26:49 GMT 2008
      - add init() method to create a new repository

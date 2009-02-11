@@ -143,7 +143,7 @@ sub get_object_packed {
 
     foreach my $pack ( $self->packs ) {
         my ( $kind, $size, $content ) = $pack->get_object($sha1);
-        if ( $kind && $size && $content ) {
+        if ( defined($kind) && defined($size) && defined($content) ) {
             return $self->create_object( $sha1, $kind, $size, $content );
         }
     }
@@ -153,7 +153,7 @@ sub get_object_loose {
     my ( $self, $sha1 ) = @_;
 
     my ( $kind, $size, $content ) = $self->loose->get_object($sha1);
-    if ( $kind && $size && $content ) {
+    if ( defined($kind) && defined($size) && defined($content) ) {
         return $self->create_object( $sha1, $kind, $size, $content );
     }
 }
@@ -274,15 +274,21 @@ sub init {
 }
 
 sub checkout {
-    my ( $self, $directory ) = @_;
-    my $master = $self->master;
-    my $tree   = $self->get_object( $master->tree );
+    my ( $self, $directory, $tree ) = @_;
+    $tree ||= $self->get_object( $self->master )->tree;
+    confess("Missing tree") unless $tree;
     foreach my $directory_entry ( $tree->directory_entries ) {
         my $filename = file( $directory, $directory_entry->filename );
         my $sha1     = $directory_entry->sha1;
+        my $mode     = $directory_entry->mode;
         my $object   = $self->get_object($sha1);
         if ( $object->kind eq 'blob' ) {
             $self->_add_file( $filename, $object->content );
+            chmod( oct( '0' . $mode ), $filename )
+                || die "Error chmoding $filename to $mode: $!";
+        } elsif ( $object->kind eq 'tree' ) {
+            dir($filename)->mkpath;
+            $self->checkout( $filename, $object );
         } else {
             die $object->kind;
         }
