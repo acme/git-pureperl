@@ -34,6 +34,7 @@ sub BUILD {
             mode     => $mode,
             filename => $filename,
             sha1     => $sha1,
+            git      => $self->git,
             );
     }
     $self->directory_entries( \@directory_entries );

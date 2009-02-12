@@ -34,7 +34,7 @@ foreach my $directory qw(test-project test-project-packs test-project-packs2)
     is( $directory_entry->filename, 'file.txt' );
     is( $directory_entry->sha1, '513feba2e53ebbd2532419ded848ba19de88ba00' );
 
-    my $blob = $git->get_object( $directory_entry->sha1 );
+    my $blob = $directory_entry->object;
     is( $blob->kind, 'blob' );
     is( $blob->size, 32 );
     is( $blob->content, 'hello world!
@@ -64,7 +64,7 @@ hello world, again
     is( $directory_entry->filename, 'file.txt' );
     is( $directory_entry->sha1, 'a0423896973644771497bdc03eb99d5281615b51' );
 
-    $blob = $git->get_object( $directory_entry->sha1 );
+    $blob = $directory_entry->object;
     is( $blob->kind, 'blob' );
     is( $blob->size, 13 );
     is( $blob->content, 'hello world!
@@ -94,7 +94,7 @@ hello world, again
     is( $directory_entry->filename, 'file.txt' );
     is( $directory_entry->sha1, '3b18e512dba79e4c8300dd08aeb37f8e728b8dad' );
 
-    $blob = $git->get_object( $directory_entry->sha1 );
+    $blob = $directory_entry->object;
     is( $blob->kind, 'blob' );
     is( $blob->size, 12 );
     is( $blob->content, 'hello world

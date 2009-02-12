@@ -8,7 +8,7 @@ has 'kind' =>
     ( is => 'ro', isa => 'ObjectKind', required => 1, default => 'tree' );
 has 'directory_entries' => (
     is         => 'rw',
-    isa        => 'ArrayRef[Git::PurePerl::DirectoryEntry]',
+    isa        => 'ArrayRef[Git::PurePerl::NewDirectoryEntry]',
     required   => 1,
     auto_deref => 1,
 );

@@ -26,12 +26,12 @@ is( $there->sha1, 'c78ee1a5bdf46d22da300b68d50bc45c587c3293' );
 is( $git->get_object('c78ee1a5bdf46d22da300b68d50bc45c587c3293')->content,
     'there' );
 
-my $hello_de = Git::PurePerl::DirectoryEntry->new(
+my $hello_de = Git::PurePerl::NewDirectoryEntry->new(
     mode     => '100644',
     filename => 'hello.txt',
     sha1     => $hello->sha1,
 );
-my $there_de = Git::PurePerl::DirectoryEntry->new(
+my $there_de = Git::PurePerl::NewDirectoryEntry->new(
     mode     => '100644',
     filename => 'there.txt',
     sha1     => $there->sha1,

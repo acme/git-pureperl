@@ -11,6 +11,7 @@ use File::Find::Rule;
 use Git::PurePerl::DirectoryEntry;
 use Git::PurePerl::Loose;
 use Git::PurePerl::Object;
+use Git::PurePerl::NewDirectoryEntry;
 use Git::PurePerl::NewObject;
 use Git::PurePerl::NewObject::Blob;
 use Git::PurePerl::NewObject::Commit;
