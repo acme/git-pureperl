@@ -155,6 +155,7 @@ sub master {
 
 sub get_object {
     my ( $self, $sha1 ) = @_;
+    return unless $sha1;
     return $self->get_object_packed($sha1) || $self->get_object_loose($sha1);
 }
 
@@ -191,6 +192,7 @@ sub create_object {
             kind    => $kind,
             size    => $size,
             content => $content,
+            git     => $self,
         );
     } elsif ( $kind eq 'tree' ) {
         return Git::PurePerl::Object::Tree->new(
@@ -198,6 +200,7 @@ sub create_object {
             kind    => $kind,
             size    => $size,
             content => $content,
+            git     => $self,
         );
     } elsif ( $kind eq 'blob' ) {
         return Git::PurePerl::Object::Blob->new(
@@ -205,6 +208,7 @@ sub create_object {
             kind    => $kind,
             size    => $size,
             content => $content,
+            git     => $self,
         );
     } elsif ( $kind eq 'tag' ) {
         return Git::PurePerl::Object::Tag->new(
@@ -212,6 +216,7 @@ sub create_object {
             kind    => $kind,
             size    => $size,
             content => $content,
+            git     => $self,
         );
     } else {
         confess "unknown kind $kind: $content";
@@ -309,7 +314,7 @@ sub init {
 
 sub checkout {
     my ( $self, $directory, $tree ) = @_;
-    $tree ||= $self->get_object( $self->master->tree );
+    $tree ||= $self->master->tree;
     confess("Missing tree") unless $tree;
     foreach my $directory_entry ( $tree->directory_entries ) {
         my $filename = file( $directory, $directory_entry->filename );

@@ -59,7 +59,7 @@ is( $commit->sha1, 'd75f1437e0c19c36f9b52312eeb6b0200dbd22ac' );
 $git->put_object($commit);
 
 my $commit2 = $git->get_object('d75f1437e0c19c36f9b52312eeb6b0200dbd22ac');
-is( $commit2->tree, $tree->sha1 );
+is( $commit2->tree_sha1, $tree->sha1 );
 
 $git = Git::PurePerl->new( directory => $directory );
 isa_ok( $git, 'Git::PurePerl', 'can get object' );
