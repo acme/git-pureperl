@@ -252,16 +252,20 @@ sub put_object {
     $self->loose->put_object($object);
 
     if ( $object->kind eq 'commit' ) {
-        my $master
-            = file( $self->directory, '.git', 'refs', 'heads', 'master' );
-        $master->parent->mkpath;
-        my $master_fh = $master->openw;
-        $master_fh->print( $object->sha1 ) || die "Error writing to $master";
-        my $head = file( $self->directory, '.git', 'HEAD' );
-        my $head_fh = $head->openw;
-        $head_fh->print('ref: refs/heads/master')
-            || die "Error writing to $head";
+        $self->update_master( $object->sha1 );
     }
+}
+
+sub update_master {
+    my ( $self, $sha1 ) = @_;
+    my $master = file( $self->directory, '.git', 'refs', 'heads', 'master' );
+    $master->parent->mkpath;
+    my $master_fh = $master->openw;
+    $master_fh->print($sha1) || die "Error writing to $master";
+    my $head = file( $self->directory, '.git', 'HEAD' );
+    my $head_fh = $head->openw;
+    $head_fh->print('ref: refs/heads/master')
+        || die "Error writing to $head";
 }
 
 sub init {
