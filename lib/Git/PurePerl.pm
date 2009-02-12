@@ -79,14 +79,14 @@ sub _build_packs {
     return \@packs;
 }
 
-sub refs {
+sub ref_names {
     my $self = shift;
-    my @refs;
+    my @names;
     foreach my $type (qw(heads remotes tags)) {
         my $dir = dir( $self->directory, '.git', 'refs', $type );
         next unless -d $dir;
         foreach my $file ( $dir->children ) {
-            push @refs, "refs/$type/" . $file->basename;
+            push @names, "refs/$type/" . $file->basename;
         }
     }
     my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
@@ -94,13 +94,23 @@ sub refs {
         foreach my $line ( $packed_refs->slurp( chomp => 1 ) ) {
             next if $line =~ /^#/;
             my ( $sha1, my $name ) = split ' ', $line;
-            push @refs, $name;
+            push @names, $name;
         }
     }
-    return @refs;
+    return @names;
 }
 
-sub ref {
+sub refs_sha1 {
+    my $self = shift;
+    return map { $self->ref_sha1($_) } $self->ref_names;
+}
+
+sub refs {
+    my $self = shift;
+    return map { $self->ref($_) } $self->ref_names;
+}
+
+sub ref_sha1 {
     my ( $self, $wantref ) = @_;
     my @refs;
     my $dir = dir( $self->directory, '.git', 'refs' );
@@ -111,7 +121,7 @@ sub ref {
             my $sha1 = file($file)->slurp
                 || confess("Error reading $file: $!");
             chomp $sha1;
-            return $self->get_object($sha1);
+            return $sha1;
         }
     }
 
@@ -121,11 +131,21 @@ sub ref {
             next if $line =~ /^#/;
             my ( $sha1, my $name ) = split ' ', $line;
             if ( $name eq $wantref ) {
-                return $self->get_object($sha1);
+                return $sha1;
             }
         }
     }
     return undef;
+}
+
+sub ref {
+    my ( $self, $wantref ) = @_;
+    return $self->get_object( $self->ref_sha1($wantref) );
+}
+
+sub master_sha1 {
+    my $self = shift;
+    return $self->ref_sha1('refs/heads/master');
 }
 
 sub master {
@@ -136,6 +156,11 @@ sub master {
 sub get_object {
     my ( $self, $sha1 ) = @_;
     return $self->get_object_packed($sha1) || $self->get_object_loose($sha1);
+}
+
+sub get_objects {
+    my ( $self, @sha1s ) = @_;
+    return map { $self->get_object($_) } @sha1s;
 }
 
 sub get_object_packed {
@@ -204,7 +229,16 @@ sub all_sha1s {
         push @streams, $pack->all_sha1s;
     }
 
-    return Data::Stream::Bulk::Cat->new( streams => \@streams, );
+    return Data::Stream::Bulk::Cat->new( streams => \@streams );
+}
+
+sub all_objects {
+    my $self   = shift;
+    my $stream = $self->all_sha1s;
+    return Data::Stream::Bulk::Filter->new(
+        filter => sub { return [ $self->get_objects(@$_) ] },
+        stream => $stream,
+    );
 }
 
 sub put_object {

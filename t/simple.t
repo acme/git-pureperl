@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 168;
+use Test::More tests => 180;
 use Git::PurePerl;
 use Path::Class;
 
@@ -99,7 +99,8 @@ hello world, again
 '
     );
 
-    is( $git->all_sha1s->all, 9 );
+    is( $git->all_sha1s->all,   9 );
+    is( $git->all_objects->all, 9 );
 
     $checkout_directory->rmtree;
     $checkout_directory->mkpath;
@@ -111,10 +112,13 @@ hello world, again
 ', 'checkout has latest content'
     );
 
-    is_deeply( [ $git->refs ], ['refs/heads/master'], 'have ref master' );
+    is_deeply( [ $git->ref_names ], ['refs/heads/master'], 'have ref names' );
+    isa_ok( ( $git->refs )[0], 'Git::PurePerl::Object::Commit', 'have refs' );
+    ok( $git->refs_sha1,                     'have refs_sha1' );
+    ok( $git->ref_sha1('refs/heads/master'), 'have ref_sha1 for master' );
     isa_ok(
         $git->ref('refs/heads/master'),
         'Git::PurePerl::Object::Commit',
-        'have master commit'
+        'have ref master'
     );
 }

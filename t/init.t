@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 25;
+use Test::More tests => 27;
 use Git::PurePerl;
 use Path::Class;
 
@@ -11,8 +11,8 @@ dir($directory)->rmtree;
 my $git = Git::PurePerl->init( directory => $directory );
 isa_ok( $git, 'Git::PurePerl', 'can init' );
 
-my @all_sha1s = $git->all_sha1s->all;
-is( @all_sha1s, 0, 'does not contain any objects' );
+is( $git->all_sha1s->all,   0, 'does not contain any sha1s' );
+is( $git->all_objects->all, 0, 'does not contain any objects' );
 
 my $hello = Git::PurePerl::NewObject::Blob->new( content => 'hello' );
 $git->put_object($hello);
@@ -64,8 +64,8 @@ is( $commit2->tree, $tree->sha1 );
 $git = Git::PurePerl->new( directory => $directory );
 isa_ok( $git, 'Git::PurePerl', 'can get object' );
 
-@all_sha1s = $git->all_sha1s->all;
-is( @all_sha1s, 4, 'contains four objects' );
+is( $git->all_sha1s->all,   4, 'contains four sha1s' );
+is( $git->all_objects->all, 4, 'contains four objects' );
 
 my $checkout_directory = dir('t/checkout');
 $checkout_directory->rmtree;
@@ -81,7 +81,7 @@ is( file('t/checkout/hello.txt')->slurp,
 is( file('t/checkout/there.txt')->slurp,
     'there', 'there.txt has latest content' );
 
-is_deeply( [ $git->refs ], ['refs/heads/master'], 'have ref master' );
+is_deeply( [ $git->ref_names ], ['refs/heads/master'], 'have ref master' );
 
 isa_ok(
     $git->ref('refs/heads/master'),
