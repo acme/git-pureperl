@@ -13,6 +13,7 @@ Revision history for Perl module Git::PurePerl:
      - fix bug to do with empty files
      - split methods into those that returns sha1s and those that
        return objects
+     - add class to index packs
 
 0.38 Thu Dec 18 10:26:49 GMT 2008
      - add init() method to create a new repository

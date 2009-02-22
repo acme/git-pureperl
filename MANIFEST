@@ -14,6 +14,8 @@ lib/Git/PurePerl/Object/Commit.pm
 lib/Git/PurePerl/Object/Tag.pm
 lib/Git/PurePerl/Object/Tree.pm
 lib/Git/PurePerl/Pack.pm
+lib/Git/PurePerl/Pack/WithIndex.pm
+lib/Git/PurePerl/Pack/WithoutIndex.pm
 lib/Git/PurePerl/PackIndex.pm
 lib/Git/PurePerl/PackIndex/Version1.pm
 lib/Git/PurePerl/PackIndex/Version2.pm

@@ -23,6 +23,8 @@ use Git::PurePerl::Object::Commit;
 use Git::PurePerl::Object::Tag;
 use Git::PurePerl::Object::Tree;
 use Git::PurePerl::Pack;
+use Git::PurePerl::Pack::WithIndex;
+use Git::PurePerl::Pack::WithoutIndex;
 use Git::PurePerl::PackIndex;
 use Git::PurePerl::PackIndex::Version1;
 use Git::PurePerl::PackIndex::Version2;
@@ -75,7 +77,8 @@ sub _build_packs {
     my @packs;
     foreach my $filename ( $pack_dir->children ) {
         next unless $filename =~ /\.pack$/;
-        push @packs, Git::PurePerl::Pack->new( filename => $filename );
+        push @packs,
+            Git::PurePerl::Pack::WithIndex->new( filename => $filename );
     }
     return \@packs;
 }
