@@ -342,6 +342,28 @@ sub checkout {
     }
 }
 
+sub clone {
+    my ( $self, $hostname, $project ) = @_;
+    my $protocol = Git::PurePerl::Protocol->new(
+        hostname => $hostname,
+        project  => $project,
+    );
+
+    my $sha1s = $protocol->connect;
+    my $head  = $sha1s->{HEAD};
+    my $data  = $protocol->fetch_pack($head);
+
+    my $filename = file( $self->directory, '.git', 'objects', 'pack',
+        'pack-' . $head . '.pack' );
+    $self->_add_file( $filename, $data );
+
+    my $pack
+        = Git::PurePerl::Pack::WithoutIndex->new( filename => $filename );
+    $pack->create_index();
+
+    $self->update_master($head);
+}
+
 sub _add_file {
     my ( $class, $filename, $contents ) = @_;
     my $fh = $filename->openw || confess "Error opening to $filename: $!";
