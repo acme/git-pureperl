@@ -19,7 +19,11 @@ sub connect {
     $socket->autoflush(1) || die $!;
     $self->socket($socket);
 
-    $self->send_line( "git-upload-pack " . $self->project );
+    $self->send_line( "git-upload-pack "
+            . $self->project
+            . "\0host="
+            . $self->hostname
+            . "\0" );
 
     my %sha1s;
     while ( my $line = $self->read_line() ) {
@@ -72,7 +76,7 @@ sub send_line {
     my $prefix = sprintf( "%04X", $length );
     my $text = $prefix . $line;
 
-    # warn "C $text";
+    # warn "$text";
     $self->socket->print($text) || die $!;
 }
 
@@ -80,10 +84,16 @@ sub read_line {
     my $self   = shift;
     my $socket = $self->socket;
 
-    $socket->read( my $prefix, 4 ) || die $!;
+    my $ret = $socket->read( my $prefix, 4 );
+    if ( not defined $ret ) {
+        die "error: $!";
+    } elsif ( $ret == 0 ) {
+        die "EOF";
+    }
+
     return if $prefix eq '0000';
 
-    #    say "read prefix [$prefix]";
+    # warn "read prefix [$prefix]";
 
     my $len = 0;
     foreach my $n ( 0 .. 3 ) {
