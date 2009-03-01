@@ -29,6 +29,7 @@ use Git::PurePerl::PackIndex;
 use Git::PurePerl::PackIndex::Version1;
 use Git::PurePerl::PackIndex::Version2;
 use Git::PurePerl::Protocol;
+use IO::Digest;
 use IO::Socket::INET;
 use Path::Class;
 our $VERSION = '0.38';

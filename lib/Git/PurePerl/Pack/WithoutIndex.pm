@@ -16,7 +16,7 @@ sub create_index {
     $index_filename =~ s/\.pack/.idx/;
     my $index_fh = IO::File->new("> $index_filename") || die $!;
 
-    my $index_sha1 = Digest::SHA1->new;
+    my $iod = IO::Digest->new( $index_fh, 'SHA1' );
 
     my $offsets = $self->create_index_offsets;
     my @fan_out_table;
@@ -27,16 +27,12 @@ sub create_index {
     }
     foreach my $i ( 0 .. 255 ) {
         $index_fh->print( pack( 'N', $fan_out_table[$i] || 0 ) ) || die $!;
-        $index_sha1->add( pack( 'N', $fan_out_table[$i] || 0 ) );
         $fan_out_table[ $i + 1 ] += $fan_out_table[$i] || 0;
     }
     foreach my $sha1 ( sort keys %$offsets ) {
         my $offset = $offsets->{$sha1};
         $index_fh->print( pack( 'N',  $offset ) ) || die $!;
-        $index_sha1->add( pack( 'N',  $offset ) );
         $index_fh->print( pack( 'H*', $sha1 ) )   || die $!;
-        $index_sha1->add( pack( 'H*', $sha1 ) );
-
     }
 
     # read the pack checksum from the end of the pack file
@@ -46,8 +42,7 @@ sub create_index {
     my $read = $fh->read( my $pack_sha1, 20 ) || die $!;
 
     $index_fh->print($pack_sha1) || die $!;
-    $index_sha1->add($pack_sha1);
-    $index_fh->print( $index_sha1->clone->digest ) || die $!;
+    $index_fh->print( $iod->digest ) || die $!;
 
     $index_fh->close() || die $!;
 }

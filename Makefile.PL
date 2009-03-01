@@ -15,6 +15,7 @@ WriteMakefile(
         'Data::Stream::Bulk'         => '0',
         'Digest::SHA1'               => '0',
         'File::Find::Rule'           => '0',
+        'IO::Digest',                => '0',
         'Moose'                      => '0',
         'MooseX::StrictConstructor'  => '0',
         'MooseX::Types::Path::Class' => '0',
