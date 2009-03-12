@@ -107,7 +107,7 @@ hello world, again
     $checkout_directory->rmtree;
     $checkout_directory->mkpath;
     $git->checkout($checkout_directory);
-    is_deeply( [ $checkout_directory->children ],
+    is_deeply( [ $checkout_directory->as_foreign('Unix')->children ],
         ['t/checkout/file.txt'], 'checkout has one file' );
     is( file('t/checkout/file.txt')->slurp, 'hello world!
 hello world, again
