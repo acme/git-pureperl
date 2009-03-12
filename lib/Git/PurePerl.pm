@@ -121,7 +121,7 @@ sub ref_sha1 {
     my $dir = dir( $self->directory, '.git', 'refs' );
     next unless -d $dir;
     foreach my $file ( File::Find::Rule->new->file->in($dir) ) {
-        my $ref = 'refs/' . file($file)->relative($dir);
+        my $ref = 'refs/' . file($file)->relative($dir)->as_foreign('Unix');
         if ( $ref eq $wantref ) {
             my $sha1 = file($file)->slurp
                 || confess("Error reading $file: $!");

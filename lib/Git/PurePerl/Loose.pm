@@ -49,8 +49,8 @@ sub all_sha1s {
     );
     return Data::Stream::Bulk::Filter->new(
         filter => sub {
-            [   map { m{([a-z0-9]{2})/([a-z0-9]{38})}; $1 . $2 }
-                    grep {m{/[a-z0-9]{2}/}} @$_
+            [   map { m{([a-z0-9]{2})[/\\]([a-z0-9]{38})}; $1 . $2 }
+                    grep {m{[/\\][a-z0-9]{2}[/\\]}} @$_
             ];
         },
         stream => $files,

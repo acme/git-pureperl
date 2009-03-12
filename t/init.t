@@ -72,7 +72,7 @@ $checkout_directory->rmtree;
 $checkout_directory->mkpath;
 $git->checkout($checkout_directory);
 is_deeply(
-    [ sort $checkout_directory->children ],
+    [ sort $checkout_directory->as_foreign('Unix')->children ],
     [ 't/checkout/hello.txt', 't/checkout/there.txt' ],
     'checkout has two files'
 );
