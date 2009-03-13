@@ -25,7 +25,7 @@ MANIFEST			This list of files
 README
 t/00_setup.t
 t/init.t
-t/protocol.t
+t/protocol_gpp.t
 t/simple.t
 test-project-packs.tgz
 test-project-packs2.tgz
