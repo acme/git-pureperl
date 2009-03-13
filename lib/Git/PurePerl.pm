@@ -58,7 +58,7 @@ has 'description' => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        file( $self->directory, '.git', 'description' )->slurp( chomp => 1 );        
+        file( $self->directory, '.git', 'description' )->slurp( chomp => 1 );
     }
 );
 

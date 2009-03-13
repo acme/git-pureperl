@@ -11,7 +11,8 @@ dir($directory)->rmtree;
 my $git = Git::PurePerl->init( directory => $directory );
 isa_ok( $git, 'Git::PurePerl', 'can init' );
 
-is( $git->description, 'Unnamed repository; edit this file to name it for gitweb.');
+is( $git->description,
+    'Unnamed repository; edit this file to name it for gitweb.' );
 
 is( $git->all_sha1s->all,   0, 'does not contain any sha1s' );
 is( $git->all_objects->all, 0, 'does not contain any objects' );
