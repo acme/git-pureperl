@@ -1,10 +1,16 @@
 #!perl
 use strict;
 use warnings;
+use Test::More;
+BEGIN {
+    if ( $^O eq 'MSWin32' ) {
+		plan skip_all => 'Windows does NOT have git-daemon yet';
+    }
+    plan tests => 12;
+}
 use Git::PurePerl;
 use IO::File;
 use Path::Class;
-use Test::More tests => 12;
 
 # git-daemon --verbose --reuseaddr --export-all /home/acme/git/git-pureperl/test-project
 
