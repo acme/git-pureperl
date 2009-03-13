@@ -1,6 +1,6 @@
 Revision history for Perl module Git::PurePerl:
 
-0.39
+0.39 Fri Mar 13 10:14:57 GMT 2009
      - add a method to generate the sha1 of an object
      - add a raw method to objects
      - add new set of classes to add objects
