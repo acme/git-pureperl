@@ -1,5 +1,9 @@
 Revision history for Perl module Git::PurePerl:
 
+0.40 Fri Mar 13 15:29:02 GMT 2009
+     - Skip protocol tests on Win32 (thanks to fayland)
+     - Add description (thanks to fayland)
+
 0.39 Fri Mar 13 10:14:57 GMT 2009
      - add a method to generate the sha1 of an object
      - add a raw method to objects
