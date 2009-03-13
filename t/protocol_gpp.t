@@ -1,16 +1,10 @@
 #!perl
 use strict;
 use warnings;
-use Test::More;
-BEGIN {
-    if ( $^O eq 'MSWin32' ) {
-		plan skip_all => 'Windows does NOT have git-daemon yet';
-    }
-    plan tests => 3;
-}
 use Git::PurePerl;
 use IO::File;
 use Path::Class;
+use Test::More tests => 3;
 
 my $directory = 'test-protocol';
 dir($directory)->rmtree;
