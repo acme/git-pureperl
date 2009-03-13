@@ -52,6 +52,16 @@ has 'packs' => (
     lazy_build => 1,
 );
 
+has 'description' => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        file( $self->directory, '.git', 'description' )->slurp( chomp => 1 );        
+    }
+);
+
 __PACKAGE__->meta->make_immutable;
 
 sub BUILD {
