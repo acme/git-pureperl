@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 61;
+use Test::More tests => 97;
 use Git::PurePerl;
 use Path::Class;
 
@@ -64,13 +64,33 @@ for my $directory (qw(test-init test-init-bare.git)) {
     is( $directory_entry2->filename, 'there.txt' );
     is( $directory_entry2->sha1, 'c78ee1a5bdf46d22da300b68d50bc45c587c3293' );
 
-    my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree->sha1 );
-    is( $commit->sha1, 'd75f1437e0c19c36f9b52312eeb6b0200dbd22ac' );
+    my $actor = Git::PurePerl::Actor->new(
+        name  => 'Your Name Comes Here',
+        email => 'you@yourdomain.example.com'
+    );
+    my $commit = Git::PurePerl::NewObject::Commit->new(
+        tree           => $tree->sha1,
+        author         => $actor,
+        authored_time  => DateTime->from_epoch( epoch => 1240341681 ),
+        committer      => $actor,
+        committed_time => DateTime->from_epoch( epoch => 1240341682 ),
+        comment        => 'Fix',
+    );
+    is( $commit->sha1, '860caea5ba298bb4f1df9a80fad84951fcc7db72' );
     $git->put_object($commit);
 
     my $commit2
-        = $git->get_object('d75f1437e0c19c36f9b52312eeb6b0200dbd22ac');
+        = $git->get_object('860caea5ba298bb4f1df9a80fad84951fcc7db72');
     is( $commit2->tree_sha1, $tree->sha1 );
+    isa_ok( $commit2->author, 'Git::PurePerl::Actor' );
+    is( $commit2->author->name,  'Your Name Comes Here' );
+    is( $commit2->author->email, 'you@yourdomain.example.com' );
+    isa_ok( $commit2->committer, 'Git::PurePerl::Actor' );
+    is( $commit2->committer->name,       'Your Name Comes Here' );
+    is( $commit2->committer->email,      'you@yourdomain.example.com' );
+    is( $commit2->authored_time->epoch,  1240341681 );
+    is( $commit2->committed_time->epoch, 1240341682 );
+    is( $commit2->comment,               'Fix' );
 
     if ( $directory eq 'test-init-bare.git' ) {
         $git = Git::PurePerl->new( gitdir => $directory );
@@ -121,10 +141,26 @@ for my $directory (qw(test-init test-init-bare.git)) {
         directory_entries => [ $hello_de, $here_de ] );
     $git->put_object($tree);
     my $newcommit = Git::PurePerl::NewObject::Commit->new(
-        tree   => $tree->sha1,
-        parent => $commit->sha1
+        tree           => $tree->sha1,
+        parent         => $commit->sha1,
+        author         => $actor,
+        authored_time  => DateTime->from_epoch( epoch => 1240341683 ),
+        committer      => $actor,
+        committed_time => DateTime->from_epoch( epoch => 1240341684 ),
+        comment        => 'Fix again',
     );
     $git->put_object($newcommit);
+
+    my $newcommit2 = $git->get_object( $newcommit->sha1 );
+    isa_ok( $newcommit2->author, 'Git::PurePerl::Actor' );
+    is( $newcommit2->author->name,  'Your Name Comes Here' );
+    is( $newcommit2->author->email, 'you@yourdomain.example.com' );
+    isa_ok( $newcommit2->committer, 'Git::PurePerl::Actor' );
+    is( $newcommit2->committer->name,       'Your Name Comes Here' );
+    is( $newcommit2->committer->email,      'you@yourdomain.example.com' );
+    is( $newcommit2->authored_time->epoch,  1240341683 );
+    is( $newcommit2->committed_time->epoch, 1240341684 );
+    is( $newcommit2->comment,               'Fix again' );
 
     is( $git->ref('refs/heads/master')->sha1,
         $newcommit->sha1, 'master updated' );

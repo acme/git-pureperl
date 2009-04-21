@@ -14,6 +14,8 @@ Revision history for Perl module Git::PurePerl:
        to martijn)
      - allow bare repositories with the gitdir parameter (thanks
        to martijn)
+     - fill new commits with real author, authored_time, committer,
+       committed_time and comment (thanks to martijn)
 
 0.40 Fri Mar 13 15:29:02 GMT 2009
      - Skip protocol tests on Win32 (thanks to fayland)
