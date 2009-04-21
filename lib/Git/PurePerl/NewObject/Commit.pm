@@ -18,6 +18,7 @@ sub _build_content {
     my $self = shift;
     my $content;
     $content .= 'tree ' . $self->tree . "\n";
+    $content .= 'parent ' . $self->parent . "\n" if $self->parent;
     $content .= "author Leon Brocard <acme\@astray.com> 1226651274 +0000\n";
     $content
         .= "committer Leon Brocard <acme\@astray.com> 1226651274 +0000\n";

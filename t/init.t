@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 28;
+use Test::More tests => 32;
 use Git::PurePerl;
 use Path::Class;
 
@@ -91,3 +91,29 @@ isa_ok(
     'Git::PurePerl::Object::Commit',
     'have master commit'
 );
+is( $git->ref('refs/heads/master')->sha1,
+    $commit->sha1, 'master points to our commit' );
+
+my $here = Git::PurePerl::NewObject::Blob->new( content => 'here' );
+$git->put_object($here);
+
+my $here_de = Git::PurePerl::NewDirectoryEntry->new(
+    mode     => '100644',
+    filename => 'there.txt',
+    sha1     => $here->sha1,
+);
+$tree = Git::PurePerl::NewObject::Tree->new(
+    directory_entries => [ $hello_de, $here_de ] );
+$git->put_object($tree);
+my $newcommit = Git::PurePerl::NewObject::Commit->new(
+    tree   => $tree->sha1,
+    parent => $commit->sha1
+);
+$git->put_object($newcommit);
+
+is( $git->ref('refs/heads/master')->sha1, $newcommit->sha1,
+    'master updated' );
+
+is( $git->all_sha1s->all,   7, 'contains seven sha1s' );
+is( $git->all_objects->all, 7, 'contains seven objects' );
+

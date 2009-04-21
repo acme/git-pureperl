@@ -10,6 +10,8 @@ Revision history for Perl module Git::PurePerl:
        and changes the type of the author and committer fields to
        Git::PurePerl::Actor, which is an object with name and
        email fields (thanks to martijn)
+     - add the parent field to a new commit when available (thanks
+       to martijn)
 
 0.40 Fri Mar 13 15:29:02 GMT 2009
      - Skip protocol tests on Win32 (thanks to fayland)
