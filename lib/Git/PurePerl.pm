@@ -36,8 +36,19 @@ use IO::Socket::INET;
 use Path::Class;
 our $VERSION = '0.40';
 
-has 'directory' =>
-    ( is => 'ro', isa => 'Path::Class::Dir', required => 1, coerce => 1 );
+has 'directory' => (
+    is       => 'ro',
+    isa      => 'Path::Class::Dir',
+    required => 0,
+    coerce   => 1
+);
+
+has 'gitdir' => (
+    is       => 'ro',
+    isa      => 'Path::Class::Dir',
+    required => 1,
+    coerce   => 1
+);
 
 has 'loose' => (
     is         => 'rw',
@@ -60,33 +71,40 @@ has 'description' => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        file( $self->directory, '.git', 'description' )->slurp( chomp => 1 );
+        file( $self->gitdir, 'description' )->slurp( chomp => 1 );
     }
 );
 
 __PACKAGE__->meta->make_immutable;
 
+sub BUILDARGS {
+    my $class  = shift;
+    my $params = $class->SUPER::BUILDARGS(@_);
+
+    $params->{'gitdir'} ||= dir( $params->{'directory'}, '.git' );
+    return $params;
+}
+
 sub BUILD {
     my $self = shift;
 
-    unless ( -d $self->directory ) {
+    unless ( -d $self->gitdir ) {
         confess $self->directory . ' is not a directory';
     }
-    my $git_dir = dir( $self->directory, '.git' );
-    unless ( -d $git_dir ) {
-        confess $self->directory . ' does not contain a .git directory';
+    unless ( not defined $self->directory or -d $self->directory ) {
+        confess $self->directory . ' is not a directory';
     }
 }
 
 sub _build_loose {
     my $self = shift;
-    my $loose_dir = dir( $self->directory, '.git', 'objects' );
+    my $loose_dir = dir( $self->gitdir, 'objects' );
     return Git::PurePerl::Loose->new( directory => $loose_dir );
 }
 
 sub _build_packs {
     my $self = shift;
-    my $pack_dir = dir( $self->directory, '.git', 'objects', 'pack' );
+    my $pack_dir = dir( $self->gitdir, 'objects', 'pack' );
     my @packs;
     foreach my $filename ( $pack_dir->children ) {
         next unless $filename =~ /\.pack$/;
@@ -114,12 +132,12 @@ sub ref_names {
     my $self = shift;
     my @names;
     foreach my $type (qw(heads remotes tags)) {
-        my $dir = dir( $self->directory, '.git', 'refs', $type );
+        my $dir = dir( $self->gitdir, 'refs', $type );
         next unless -d $dir;
         my $base = "refs/$type/";
         _ref_names_recursive( $dir, $base, \@names );
     }
-    my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
+    my $packed_refs = file( $self->gitdir, 'packed-refs' );
     if ( -f $packed_refs ) {
         foreach my $line ( $packed_refs->slurp( chomp => 1 ) ) {
             next if $line =~ /^#/;
@@ -143,7 +161,7 @@ sub refs {
 sub ref_sha1 {
     my ( $self, $wantref ) = @_;
     my @refs;
-    my $dir = dir( $self->directory, '.git', 'refs' );
+    my $dir = dir( $self->gitdir, 'refs' );
     next unless -d $dir;
     foreach my $file ( File::Find::Rule->new->file->in($dir) ) {
         my $ref = 'refs/' . file($file)->relative($dir)->as_foreign('Unix');
@@ -155,7 +173,7 @@ sub ref_sha1 {
         }
     }
 
-    my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
+    my $packed_refs = file( $self->gitdir, 'packed-refs' );
     if ( -f $packed_refs ) {
         foreach my $line ( $packed_refs->slurp( chomp => 1 ) ) {
             next if $line =~ /^#/;
@@ -255,7 +273,7 @@ sub create_object {
 
 sub all_sha1s {
     my $self = shift;
-    my $dir = dir( $self->directory, '.git', 'objects' );
+    my $dir = dir( $self->gitdir, 'objects' );
 
     my @streams;
     push @streams, $self->loose->all_sha1s;
@@ -287,11 +305,11 @@ sub put_object {
 
 sub update_master {
     my ( $self, $sha1 ) = @_;
-    my $master = file( $self->directory, '.git', 'refs', 'heads', 'master' );
+    my $master = file( $self->gitdir, 'refs', 'heads', 'master' );
     $master->parent->mkpath;
     my $master_fh = $master->openw;
     $master_fh->print($sha1) || die "Error writing to $master";
-    my $head = file( $self->directory, '.git', 'HEAD' );
+    my $head = file( $self->gitdir, 'HEAD' );
     my $head_fh = $head->openw;
     $head_fh->print('ref: refs/heads/master')
         || die "Error writing to $head";
@@ -299,10 +317,21 @@ sub update_master {
 
 sub init {
     my ( $class, %arguments ) = @_;
-    my $directory = $arguments{directory} || confess "No directory passed";
-    my $git_dir = dir( $directory, '.git' );
 
-    dir($directory)->mkpath;
+    my $directory = $arguments{directory};
+    my $git_dir;
+
+    unless ( defined $directory ) {
+        $git_dir = $arguments{gitdir}
+            || confess
+            "init() needs either a 'directory' or a 'gitdir' argument";
+    } else {
+        if ( not defined $arguments{gitdir} ) {
+            $git_dir = $arguments{gitdir} = dir( $directory, '.git' );
+        }
+        dir($directory)->mkpath;
+    }
+
     dir($git_dir)->mkpath;
     dir( $git_dir, 'refs',    'tags' )->mkpath;
     dir( $git_dir, 'objects', 'info' )->mkpath;
@@ -310,9 +339,10 @@ sub init {
     dir( $git_dir, 'branches' )->mkpath;
     dir( $git_dir, 'hooks' )->mkpath;
 
+    my $bare = defined($directory) ? 'false' : 'true';
     $class->_add_file(
         file( $git_dir, 'config' ),
-        "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n"
+        "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = $bare\n\tlogallrefupdates = true\n"
     );
     $class->_add_file( file( $git_dir, 'description' ),
         "Unnamed repository; edit this file to name it for gitweb.\n" );
@@ -379,8 +409,8 @@ sub clone {
     my $head  = $sha1s->{HEAD};
     my $data  = $protocol->fetch_pack($head);
 
-    my $filename = file( $self->directory, '.git', 'objects', 'pack',
-        'pack-' . $head . '.pack' );
+    my $filename
+        = file( $self->gitdir, 'objects', 'pack', 'pack-' . $head . '.pack' );
     $self->_add_file( $filename, $data );
 
     my $pack
