@@ -1,5 +1,6 @@
 CHANGES
 lib/Git/PurePerl.pm
+lib/Git/PurePerl/Actor.pm
 lib/Git/PurePerl/DirectoryEntry.pm
 lib/Git/PurePerl/Loose.pm
 lib/Git/PurePerl/NewDirectoryEntry.pm
