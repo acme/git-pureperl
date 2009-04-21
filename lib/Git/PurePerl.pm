@@ -94,15 +94,28 @@ sub _build_packs {
     return \@packs;
 }
 
+sub _ref_names_recursive {
+    my ( $dir, $base, $names ) = @_;
+
+    foreach my $file ( $dir->children ) {
+        if ( -d $file ) {
+            my $reldir  = $file->relative($dir);
+            my $subbase = $base . $reldir . "/";
+            _ref_names_dir( $file, $subbase, $names );
+        } else {
+            push @$names, $base . $file->basename;
+        }
+    }
+}
+
 sub ref_names {
     my $self = shift;
     my @names;
     foreach my $type (qw(heads remotes tags)) {
         my $dir = dir( $self->directory, '.git', 'refs', $type );
         next unless -d $dir;
-        foreach my $file ( $dir->children ) {
-            push @names, "refs/$type/" . $file->basename;
-        }
+        my $base = "refs/$type/";
+        _ref_names_recursive( $dir, $base, \@names );
     }
     my $packed_refs = file( $self->directory, '.git', 'packed-refs' );
     if ( -f $packed_refs ) {
