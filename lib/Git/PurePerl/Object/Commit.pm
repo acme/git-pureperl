@@ -8,15 +8,20 @@ has 'kind' =>
     ( is => 'ro', isa => 'ObjectKind', required => 1, default => 'commit' );
 has 'tree_sha1'   => ( is => 'rw', isa => 'Str', required => 0 );
 has 'parent_sha1' => ( is => 'rw', isa => 'Str', required => 0 );
-has 'author'      => ( is => 'rw', isa => 'Str', required => 0 );
-has 'committer'   => ( is => 'rw', isa => 'Str', required => 0 );
-has 'comment'     => ( is => 'rw', isa => 'Str', required => 0 );
+has 'author' => ( is => 'rw', isa => 'Git::PurePerl::Actor', required => 0 );
+has 'authored_time' => ( is => 'rw', isa => 'DateTime', required => 0 );
+has 'committer' =>
+    ( is => 'rw', isa => 'Git::PurePerl::Actor', required => 0 );
+has 'committed_time' => ( is => 'rw', isa => 'DateTime', required => 0 );
+has 'comment'        => ( is => 'rw', isa => 'Str',      required => 0 );
 
 __PACKAGE__->meta->make_immutable;
 
 my %method_map = (
-    'tree'   => 'tree_sha1',
-    'parent' => 'parent_sha1',
+    'tree'      => 'tree_sha1',
+    'parent'    => 'parent_sha1',
+    'author'    => 'authored_time',
+    'committer' => 'committed_time'
 );
 
 sub BUILD {
@@ -26,8 +31,22 @@ sub BUILD {
     while ( my $line = shift @lines ) {
         last unless $line;
         my ( $key, $value ) = split ' ', $line, 2;
-        $key = $method_map{$key} || $key;
-        $self->$key($value);
+        if ( $key eq 'committer' or $key eq 'author' ) {
+            my @data = split ' ', $value;
+            my ( $email, $epoch, $tz ) = splice( @data, -3 );
+            $email = substr( $email, 1, -1 );
+            my $name = join ' ', @data;
+            my $actor
+                = Git::PurePerl::Actor->new( name => $name, email => $email );
+            $self->$key($actor);
+            $key = $method_map{$key};
+            my $dt
+                = DateTime->from_epoch( epoch => $epoch, time_zone => $tz );
+            $self->$key($dt);
+        } else {
+            $key = $method_map{$key} || $key;
+            $self->$key($value);
+        }
     }
     $self->comment( join "\n", @lines );
 }

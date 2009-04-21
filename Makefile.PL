@@ -13,6 +13,7 @@ WriteMakefile(
         'Compress::Raw::Zlib'        => '0',
         'Compress::Zlib'             => '0',
         'Data::Stream::Bulk'         => '0',
+        'DateTime'                   => '0',
         'Digest::SHA1'               => '0',
         'File::Find::Rule'           => '0',
         'IO::Digest',                => '0',

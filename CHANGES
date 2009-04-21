@@ -4,6 +4,12 @@ Revision history for Perl module Git::PurePerl:
      - allow subdirectories in .git/refs/*/ (thanks to martijn)
      - run protocol.t test with --base-path to not care about where
        on the filesystem the checkout is (thanks to martijn)
+     - when parsing a commit, split up the author and committer
+       fields into name, email and commit time. This adds two new
+       DateTime fields, authored_time and committed_time to ::Commit
+       and changes the type of the author and committer fields to
+       Git::PurePerl::Actor, which is an object with name and
+       email fields (thanks to martijn)
 
 0.40 Fri Mar 13 15:29:02 GMT 2009
      - Skip protocol tests on Win32 (thanks to fayland)

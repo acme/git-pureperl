@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 186;
+use Test::More tests => 198;
 use Git::PurePerl;
 use Path::Class;
 
@@ -18,11 +18,13 @@ foreach my $directory qw(test-project test-project-packs test-project-packs2)
     like( $commit->sha1, qr/^[a-z0-9]{40}$/ );
     is( $commit->tree_sha1, '37b4fcd62571f07408e830f455268891f95cecf5' );
     like( $commit->parent_sha1, qr/^[a-z0-9]{40}$/ );
-    like( $commit->author,
-        qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    like( $commit->committer,
-        qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    is( $commit->comment, 'add again' );
+    isa_ok( $commit->author,    'Git::PurePerl::Actor' );
+    isa_ok( $commit->committer, 'Git::PurePerl::Actor' );
+    is( $commit->author->name,    'Your Name Comes Here' );
+    is( $commit->committer->name, 'Your Name Comes Here' );
+    isa_ok( $commit->authored_time, 'DateTime' );
+    is( $commit->authored_time->month, 11 );
+    is( $commit->comment,              'add again' );
 
     my $tree = $commit->tree;
     is( $tree->kind, 'tree' );
@@ -48,11 +50,9 @@ hello world, again
     like( $commit->sha1, qr/^[a-z0-9]{40}$/ );
     is( $commit->tree_sha1, 'd0492b368b66bdabf2ac1fd8c92b39d3db916e59' );
     like( $commit->parent_sha1, qr/^[a-z0-9]{40}$/ );
-    like( $commit->author,
-        qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    like( $commit->committer,
-        qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    is( $commit->comment, 'add emphasis' );
+    is( $commit->author->email,    'you@yourdomain.example.com' );
+    is( $commit->committer->email, 'you@yourdomain.example.com' );
+    is( $commit->comment,          'add emphasis' );
 
     $tree = $commit->tree;
     is( $tree->kind, 'tree' );
@@ -75,14 +75,12 @@ hello world, again
     is( $commit->kind, 'commit' );
     is( $commit->size, 213 );
     like( $commit->sha1, qr/^[a-z0-9]{40}$/ );
-    is( $commit->tree_sha1,   '92b8b694ffb1675e5975148e1121810081dbdffe' );
-    is( $commit->parent_sha1, undef );
-    is( $commit->parent,      undef );
-    like( $commit->author,
-        qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    like( $commit->committer,
-        qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-    is( $commit->comment, 'initial commit' );
+    is( $commit->tree_sha1,    '92b8b694ffb1675e5975148e1121810081dbdffe' );
+    is( $commit->parent_sha1,  undef );
+    is( $commit->parent,       undef );
+    is( $commit->author->name, 'Your Name Comes Here' );
+    is( $commit->committer->name, 'Your Name Comes Here' );
+    is( $commit->comment,         'initial commit' );
 
     $tree = $commit->tree;
     is( $tree->kind, 'tree' );

@@ -7,7 +7,7 @@ BEGIN {
     if ( $^O eq 'MSWin32' ) {
         plan skip_all => 'Windows does NOT have git-daemon yet';
     }
-    plan tests => 12;
+    plan tests => 14;
 }
 use Git::PurePerl;
 use IO::File;
@@ -36,8 +36,8 @@ is( $commit->size, 256 );
 like( $commit->sha1, qr/^[a-z0-9]{40}$/ );
 is( $commit->tree_sha1, '37b4fcd62571f07408e830f455268891f95cecf5' );
 like( $commit->parent_sha1, qr/^[a-z0-9]{40}$/ );
-like( $commit->author,
-    qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-like( $commit->committer,
-    qr/^Your Name Comes Here <you\@yourdomain.example.com>/ );
-is( $commit->comment, 'add again' );
+is( $commit->author->name,     'Your Name Comes Here' );
+is( $commit->author->email,    'you@yourdomain.example.com' );
+is( $commit->committer->name,  'Your Name Comes Here' );
+is( $commit->committer->email, 'you@yourdomain.example.com' );
+is( $commit->comment,          'add again' );
