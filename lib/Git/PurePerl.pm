@@ -34,7 +34,7 @@ use Git::PurePerl::Protocol;
 use IO::Digest;
 use IO::Socket::INET;
 use Path::Class;
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 
 has 'directory' => (
     is       => 'ro',
