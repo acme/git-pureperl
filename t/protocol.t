@@ -13,7 +13,7 @@ use Git::PurePerl;
 use IO::File;
 use Path::Class;
 
-# git-daemon --verbose --reuseaddr --export-all /home/acme/git/git-pureperl/test-project
+# git daemon --verbose --reuseaddr --export-all --base-path=/home/acme/git/git-pureperl
 
 my $directory = 'test-protocol';
 dir($directory)->rmtree;
@@ -21,7 +21,7 @@ dir($directory)->rmtree;
 my $git = Git::PurePerl->init( directory => $directory );
 isa_ok( $git, 'Git::PurePerl', 'can init' );
 
-$git->clone( 'localhost', '/home/acme/git/git-pureperl/test-project' );
+$git->clone( 'localhost', '/test-project' );
 
 is( $git->all_sha1s->all,   9 );
 is( $git->all_objects->all, 9 );
