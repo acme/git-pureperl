@@ -295,23 +295,26 @@ sub all_objects {
 }
 
 sub put_object {
-    my ( $self, $object ) = @_;
+    my ( $self, $object, $ref ) = @_;
     $self->loose->put_object($object);
 
     if ( $object->kind eq 'commit' ) {
-        $self->update_master( $object->sha1 );
+        $ref = 'master' unless $ref;
+        $self->update_ref( $ref, $object->sha1 );
     }
 }
 
-sub update_master {
-    my ( $self, $sha1 ) = @_;
-    my $master = file( $self->gitdir, 'refs', 'heads', 'master' );
-    $master->parent->mkpath;
-    my $master_fh = $master->openw;
-    $master_fh->print($sha1) || die "Error writing to $master";
+sub update_ref {
+    my ( $self, $refname, $sha1 ) = @_;
+    my $ref = file( $self->gitdir, 'refs', 'heads', $refname );
+    $ref->parent->mkpath;
+    my $ref_fh = $ref->openw;
+    $ref_fh->print($sha1) || die "Error writing to $ref";
+
+    # FIXME is this always what we want?
     my $head = file( $self->gitdir, 'HEAD' );
     my $head_fh = $head->openw;
-    $head_fh->print('ref: refs/heads/master')
+    $head_fh->print("ref: refs/heads/$refname")
         || die "Error writing to $head";
 }
 
@@ -417,7 +420,7 @@ sub clone {
         = Git::PurePerl::Pack::WithoutIndex->new( filename => $filename );
     $pack->create_index();
 
-    $self->update_master($head);
+    $self->update_ref( master => $head );
 }
 
 sub _add_file {

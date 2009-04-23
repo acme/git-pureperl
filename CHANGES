@@ -1,5 +1,9 @@
 Revision history for Perl module Git::PurePerl:
 
+0.42
+     - allow put_object to update other heads than just 'master'
+       (thanks to martijn)
+
 0.41 Tue Apr 21 20:41:07 BST 2009
      - allow subdirectories in .git/refs/*/ (thanks to martijn)
      - run protocol.t test with --base-path to not care about where
