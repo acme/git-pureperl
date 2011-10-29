@@ -76,7 +76,7 @@ sub get_object_offset {
             $last = $mid;
         } else {
             my $pos
-                = $self->global_offset 
+                = $self->global_offset
                 + $OffsetStart
                 + ( $self->size * ( $SHA1Size + $CrcSize ) )
                 + ( $mid * $OffsetSize );
