@@ -51,7 +51,7 @@ Revision history for Perl module Git::PurePerl:
      - speed everything up by making the classes immutable
      - lazily build packs
      - simplify the code by splitting pack index reading into
-       Git::PurePerl::PackIndex::Version1 and 
+       Git::PurePerl::PackIndex::Version1 and
        Git::PurePerl::PackIndex::Version2
      - minor tidying of code
 
@@ -67,7 +67,7 @@ Revision history for Perl module Git::PurePerl:
      - add all_sha1s method
 
 0.34 Fri Nov 21 17:20:17 GMT 2008
-     - speed up finding objects in pack files by using a 
+     - speed up finding objects in pack files by using a
        binary search algorithm
 
 0.33 Thu Nov 20 09:28:36 GMT 2008

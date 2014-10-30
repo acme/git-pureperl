@@ -40,4 +40,4 @@ rm -rf test-project-packs
 # and likewise but on a recent git for test-project-packs2
 tar fvzc test-project-packs2.tgz test-project-packs2
 
-=cut 
+=cut
